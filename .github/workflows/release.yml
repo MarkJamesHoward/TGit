@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=$($env:GITHUB_REF -replace 'refs/tags/v', '')" >> $env:GITHUB_OUTPUT
+
+      - name: Update version in csproj
+        run: |
+          $content = Get-Content TGit.csproj -Raw
+          $content = $content -replace '<Version>.*</Version>', "<Version>${{ steps.version.outputs.VERSION }}</Version>"
+          Set-Content TGit.csproj $content
+
+      - name: Build Windows x64
+        run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o publish/win-x64
+
+      - name: Build Windows ARM64
+        run: dotnet publish -c Release -r win-arm64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o publish/win-arm64
+
+      - name: Create ZIP packages
+        run: |
+          Compress-Archive -Path publish/win-x64/tgit.exe -DestinationPath TGit-${{ steps.version.outputs.VERSION }}-win-x64.zip
+          Compress-Archive -Path publish/win-arm64/tgit.exe -DestinationPath TGit-${{ steps.version.outputs.VERSION }}-win-arm64.zip
+
+      - name: Calculate SHA256
+        id: hash
+        run: |
+          $hashX64 = (Get-FileHash TGit-${{ steps.version.outputs.VERSION }}-win-x64.zip -Algorithm SHA256).Hash
+          $hashArm64 = (Get-FileHash TGit-${{ steps.version.outputs.VERSION }}-win-arm64.zip -Algorithm SHA256).Hash
+          echo "SHA256_X64=$hashX64" >> $env:GITHUB_OUTPUT
+          echo "SHA256_ARM64=$hashArm64" >> $env:GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            TGit-${{ steps.version.outputs.VERSION }}-win-x64.zip
+            TGit-${{ steps.version.outputs.VERSION }}-win-arm64.zip
+          body: |
+            ## TGit v${{ steps.version.outputs.VERSION }}
+            
+            Git CLI wrapper with activity tracking dashboard.
+            
+            ### Installation
+            
+            **Winget (coming soon):**
+            ```
+            winget install MarkJamesHoward.TGit
+            ```
+            
+            **Manual:**
+            1. Download the ZIP for your architecture
+            2. Extract `tgit.exe` to a folder in your PATH
+            
+            ### SHA256 Checksums
+            - win-x64: `${{ steps.hash.outputs.SHA256_X64 }}`
+            - win-arm64: `${{ steps.hash.outputs.SHA256_ARM64 }}`
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output winget manifest info
+        run: |
+          Write-Host "Winget Manifest Info:"
+          Write-Host "Version: ${{ steps.version.outputs.VERSION }}"
+          Write-Host "SHA256 x64: ${{ steps.hash.outputs.SHA256_X64 }}"
+          Write-Host "SHA256 ARM64: ${{ steps.hash.outputs.SHA256_ARM64 }}"
+          Write-Host "Download URL x64: https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.VERSION }}/TGit-${{ steps.version.outputs.VERSION }}-win-x64.zip"

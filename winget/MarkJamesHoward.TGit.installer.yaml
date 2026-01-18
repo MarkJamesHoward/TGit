@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+
+PackageIdentifier: MarkJamesHoward.TGit
+PackageVersion: 1.1.1
+InstallerType: zip
+NestedInstallerType: portable
+NestedInstallerFiles:
+  - RelativeFilePath: tgit.exe
+    PortableCommandAlias: tgit
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/MarkJamesHoward/TGit/releases/download/v1.1.1/TGit-1.1.1-win-x64.zip
+    InstallerSha256: # UPDATE_WITH_ACTUAL_HASH
+  - Architecture: arm64
+    InstallerUrl: https://github.com/MarkJamesHoward/TGit/releases/download/v1.1.1/TGit-1.1.1-win-arm64.zip
+    InstallerSha256: # UPDATE_WITH_ACTUAL_HASH
+ManifestType: installer
+ManifestVersion: 1.6.0
