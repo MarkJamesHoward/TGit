@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { recordActivity, type GitActivity } from "../../lib/store";
+import { recordActivity, type GitActivity } from "../../lib/cosmos";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
     
     // Record the activity
-    recordActivity(activity);
+    await recordActivity(activity);
     
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

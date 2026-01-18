@@ -2,13 +2,14 @@
 import Layout from '../layouts/Layout.astro';
 
 const currentVersion = "1.0.5";
+const dashboardUrl = "http://localhost:4321"; // Update this to your dashboard URL
 ---
 
-<Layout title="TGit - Git Activity Tracker">
+<Layout title="TGit Documentation">
   <div class="docs-container">
     <nav class="top-nav">
-      <a href="/" class="nav-link">Dashboard</a>
-      <a href="/docs" class="nav-link active">Documentation</a>
+      <a href={dashboardUrl} class="nav-link">Dashboard</a>
+      <a href="/" class="nav-link active">Documentation</a>
     </nav>
 
     <header class="hero">

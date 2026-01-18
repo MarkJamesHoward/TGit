@@ -1,10 +1,20 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import UserCard from '../components/UserCard.astro';
-import { getAllUsers, isUserActive } from '../lib/store';
+import { getAllUsers, isUserActive, isCosmosConfigured } from '../lib/cosmos';
 
-const users = getAllUsers();
-const activeCount = users.filter(u => isUserActive(u)).length;
+let users: Awaited<ReturnType<typeof getAllUsers>> = [];
+let activeCount = 0;
+let cosmosConfigured = isCosmosConfigured();
+
+if (cosmosConfigured) {
+  try {
+    users = await getAllUsers();
+    activeCount = users.filter(u => isUserActive(u)).length;
+  } catch (error) {
+    console.error('Error fetching users from Cosmos DB:', error);
+  }
+}
 
 // Serialize users for the template
 const serializedUsers = users.map(user => ({
@@ -20,7 +30,7 @@ const serializedUsers = users.map(user => ({
   <div class="container">
     <nav class="top-nav">
       <a href="/" class="nav-link active">Dashboard</a>
-      <a href="/docs" class="nav-link">Documentation</a>
+      <a href="http://localhost:4322" class="nav-link">Documentation</a>
     </nav>
 
     <header>
@@ -68,7 +78,19 @@ const serializedUsers = users.map(user => ({
     </div>
 
     <div class="users-grid" id="users-grid">
-      {serializedUsers.length === 0 ? (
+      {!cosmosConfigured ? (
+        <div class="empty-state config-warning">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <h2>Database Not Configured</h2>
+          <p>Set the following environment variables to connect to Azure Cosmos DB:</p>
+          <code>COSMOS_ENDPOINT=https://your-account.documents.azure.com:443/</code>
+          <code>COSMOS_KEY=your-primary-key</code>
+        </div>
+      ) : serializedUsers.length === 0 ? (
         <div class="empty-state">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -352,5 +374,16 @@ const serializedUsers = users.map(user => ({
     padding: 8px 16px;
     border-radius: 6px;
     font-size: 14px;
+    display: block;
+    margin-top: 8px;
+  }
+
+  .config-warning svg {
+    color: var(--accent-yellow);
+    opacity: 1;
+  }
+
+  .config-warning h2 {
+    color: var(--accent-yellow);
   }
 </style>

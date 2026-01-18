@@ -8,7 +8,8 @@ class Program
     // Configure your API endpoint via TGIT_API_URL environment variable
     // Default points to local development server
     private static readonly string ApiEndpoint = Environment.GetEnvironmentVariable("TGIT_API_URL") 
-        ?? "http://localhost:4321/api/git-activity";
+        ?? "https://lemon-tree-024d13b00.6.azurestaticapps.net/api/git-activity";
+        //"http://localhost:4321/api/git-activity";
     
     private static readonly HttpClient HttpClient = new();
 

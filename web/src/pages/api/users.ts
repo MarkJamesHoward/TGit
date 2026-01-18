@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getAllUsers, getActiveUsers, isUserActive, type UserStatus, type RepoActivity } from "../../lib/store";
+import { getAllUsers, getActiveUsers, isUserActive, type UserStatus, type RepoActivity } from "../../lib/cosmos";
 
 interface SerializableRepoActivity {
   repoName: string;
@@ -31,7 +31,7 @@ function serializeUser(user: UserStatus): SerializableUserStatus {
 export const GET: APIRoute = async ({ url }) => {
   const activeOnly = url.searchParams.get("active") === "true";
   
-  const users = activeOnly ? getActiveUsers() : getAllUsers();
+  const users = activeOnly ? await getActiveUsers() : await getAllUsers();
   const serializedUsers = users.map(serializeUser);
   
   return new Response(JSON.stringify({
