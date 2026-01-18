@@ -9,7 +9,7 @@ const dashboardUrl = "http://localhost:4321"; // Update this to your dashboard U
   <div class="docs-container">
     <nav class="top-nav">
       <a href={dashboardUrl} class="nav-link">Dashboard</a>
-      <a href="/" class="nav-link active">Documentation</a>
+      <a href={import.meta.env.BASE_URL} class="nav-link active">Documentation</a>
     </nav>
 
     <header class="hero">
