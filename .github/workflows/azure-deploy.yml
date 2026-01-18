@@ -31,9 +31,17 @@ jobs:
         working-directory: ./web
         run: npm run build
 
+      - name: Create deployment package
+        working-directory: ./web
+        run: |
+          mkdir -p deploy
+          cp -r dist deploy/
+          cp package.json deploy/
+          cd deploy && npm install --omit=dev
+          
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'TGit'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./web
+          package: ./web/deploy
