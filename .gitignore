@@ -1,0 +1,13 @@
+# Build outputs
+bin/
+obj/
+nupkg/
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+
+# macOS
+.DS_Store

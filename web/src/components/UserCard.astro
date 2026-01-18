@@ -1,0 +1,315 @@
+---
+interface FileEditInfo {
+  filePath: string;
+  status: string;
+  isStaged: boolean;
+}
+
+interface RepoActivity {
+  repoName: string;
+  branch: string;
+  remoteUrl?: string;
+  modifiedFiles: FileEditInfo[];
+  lastUpdated: string;
+  machineName: string;
+}
+
+interface Props {
+  userName: string;
+  userEmail: string;
+  lastActivity: string;
+  isActive: boolean;
+  activities: RepoActivity[];
+}
+
+const { userName, userEmail, lastActivity, isActive, activities } = Astro.props;
+
+function getTimeSince(timestamp: string): string {
+  const now = Date.now();
+  const activityTime = new Date(timestamp).getTime();
+  const diffMs = now - activityTime;
+  
+  const minutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(diffMs / 3600000);
+  const days = Math.floor(diffMs / 86400000);
+  
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+}
+
+function getStatusColor(status: string): string {
+  switch (status) {
+    case 'Added': return 'var(--accent-green)';
+    case 'Modified': return 'var(--accent-yellow)';
+    case 'Deleted': return 'var(--accent-red)';
+    case 'Renamed': return 'var(--accent-purple)';
+    case 'Untracked': return 'var(--text-secondary)';
+    default: return 'var(--text-secondary)';
+  }
+}
+
+function getStatusIcon(status: string): string {
+  switch (status) {
+    case 'Added': return '+';
+    case 'Modified': return '~';
+    case 'Deleted': return '-';
+    case 'Renamed': return '→';
+    case 'Untracked': return '?';
+    default: return '•';
+  }
+}
+
+function getInitials(name: string): string {
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+}
+
+const totalFiles = activities.reduce((sum, a) => sum + a.modifiedFiles.length, 0);
+---
+
+<div class="user-card" data-active={isActive}>
+  <div class="user-header">
+    <div class="avatar" style={`background-color: hsl(${userName.length * 30 % 360}, 60%, 40%)`}>
+      {getInitials(userName)}
+    </div>
+    <div class="user-info">
+      <div class="user-name">
+        {userName}
+        <span class={`status-badge ${isActive ? 'active' : 'idle'}`}>
+          {isActive ? 'Active' : 'Idle'}
+        </span>
+      </div>
+      <div class="user-email">{userEmail}</div>
+      <div class="last-activity">Last activity: {getTimeSince(lastActivity)}</div>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-value">{activities.length}</span>
+        <span class="stat-label">{activities.length === 1 ? 'repo' : 'repos'}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">{totalFiles}</span>
+        <span class="stat-label">{totalFiles === 1 ? 'file' : 'files'}</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="repos">
+    {activities.map((activity) => (
+      <div class="repo">
+        <div class="repo-header">
+          <span class="repo-name">{activity.repoName}</span>
+          <span class="branch">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+              <path fill-rule="evenodd" d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5zM3.5 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"></path>
+            </svg>
+            {activity.branch}
+          </span>
+          <span class="machine">{activity.machineName}</span>
+        </div>
+        <div class="files">
+          {activity.modifiedFiles.slice(0, 5).map((file) => (
+            <div class="file">
+              <span class="file-status" style={`color: ${getStatusColor(file.status)}`}>
+                {getStatusIcon(file.status)}
+              </span>
+              <span class="file-path">{file.filePath}</span>
+              {file.isStaged && <span class="staged-badge">staged</span>}
+            </div>
+          ))}
+          {activity.modifiedFiles.length > 5 && (
+            <div class="more-files">
+              +{activity.modifiedFiles.length - 5} more files
+            </div>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .user-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .user-card:hover {
+    border-color: var(--accent-blue);
+  }
+
+  .user-card[data-active="true"] {
+    border-left: 3px solid var(--accent-green);
+  }
+
+  .user-card[data-active="false"] {
+    border-left: 3px solid var(--text-secondary);
+    opacity: 0.7;
+  }
+
+  .user-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .user-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .user-name {
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .status-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+  }
+
+  .status-badge.active {
+    background: rgba(63, 185, 80, 0.2);
+    color: var(--accent-green);
+  }
+
+  .status-badge.idle {
+    background: rgba(139, 148, 158, 0.2);
+    color: var(--text-secondary);
+  }
+
+  .user-email {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .last-activity {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent-blue);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .repos {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .repo {
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .repo-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .repo-name {
+    font-weight: 600;
+    color: var(--accent-blue);
+  }
+
+  .branch {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .machine {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-left: auto;
+  }
+
+  .files {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  .file-status {
+    font-weight: 700;
+    width: 12px;
+    text-align: center;
+  }
+
+  .file-path {
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .staged-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    background: rgba(88, 166, 255, 0.2);
+    color: var(--accent-blue);
+    border-radius: 4px;
+    font-family: inherit;
+  }
+
+  .more-files {
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding-left: 20px;
+  }
+</style>

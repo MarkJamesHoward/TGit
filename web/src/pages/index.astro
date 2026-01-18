@@ -1,0 +1,356 @@
+---
+import Layout from '../layouts/Layout.astro';
+import UserCard from '../components/UserCard.astro';
+import { getAllUsers, isUserActive } from '../lib/store';
+
+const users = getAllUsers();
+const activeCount = users.filter(u => isUserActive(u)).length;
+
+// Serialize users for the template
+const serializedUsers = users.map(user => ({
+  userName: user.userName,
+  userEmail: user.userEmail,
+  lastActivity: user.lastActivity,
+  isActive: isUserActive(user),
+  activities: Object.values(user.activities)
+}));
+---
+
+<Layout title="TGit Dashboard">
+  <div class="container">
+    <nav class="top-nav">
+      <a href="/" class="nav-link active">Dashboard</a>
+      <a href="/docs" class="nav-link">Documentation</a>
+    </nav>
+
+    <header>
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M16 2L4 8v16l12 6 12-6V8L16 2z" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M16 8v16M8 12l8 4 8-4" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <h1>TGit Dashboard</h1>
+      </div>
+      <div class="stats-header">
+        <div class="stat-pill active">
+          <span class="dot"></span>
+          {activeCount} active
+        </div>
+        <div class="stat-pill total">
+          {users.length} total users
+        </div>
+        <button id="refresh-btn" class="refresh-btn" title="Refresh">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 3a5 5 0 104.546 2.914.5.5 0 01.908-.418A6 6 0 118 2v1z"/>
+            <path d="M8 4.466V.534a.25.25 0 01.41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 018 4.466z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="filters">
+      <input 
+        type="text" 
+        id="search" 
+        placeholder="Search by name, email, or repo..." 
+        class="search-input"
+      />
+      <select id="filter-status" class="filter-select">
+        <option value="all">All Users</option>
+        <option value="active">Active Only</option>
+        <option value="idle">Idle Only</option>
+      </select>
+      <select id="sort-by" class="filter-select">
+        <option value="recent">Most Recent</option>
+        <option value="name">By Name</option>
+        <option value="files">By File Count</option>
+      </select>
+    </div>
+
+    <div class="users-grid" id="users-grid">
+      {serializedUsers.length === 0 ? (
+        <div class="empty-state">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <h2>No Activity Yet</h2>
+          <p>When developers use TGit, their activity will appear here.</p>
+          <code>tgit add . && tgit commit -m "message"</code>
+        </div>
+      ) : (
+        serializedUsers.map((user) => (
+          <UserCard {...user} />
+        ))
+      )}
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Auto-refresh every 30 seconds
+  let refreshInterval: number;
+
+  function startAutoRefresh() {
+    refreshInterval = setInterval(() => {
+      window.location.reload();
+    }, 30000);
+  }
+
+  function stopAutoRefresh() {
+    clearInterval(refreshInterval);
+  }
+
+  // Manual refresh
+  document.getElementById('refresh-btn')?.addEventListener('click', () => {
+    window.location.reload();
+  });
+
+  // Search and filter functionality
+  const searchInput = document.getElementById('search') as HTMLInputElement;
+  const filterStatus = document.getElementById('filter-status') as HTMLSelectElement;
+  const sortBy = document.getElementById('sort-by') as HTMLSelectElement;
+  const usersGrid = document.getElementById('users-grid');
+
+  function filterAndSort() {
+    const cards = usersGrid?.querySelectorAll('.user-card') as NodeListOf<HTMLElement>;
+    if (!cards) return;
+
+    const searchTerm = searchInput?.value.toLowerCase() || '';
+    const statusFilter = filterStatus?.value || 'all';
+
+    cards.forEach(card => {
+      const userName = card.querySelector('.user-name')?.textContent?.toLowerCase() || '';
+      const userEmail = card.querySelector('.user-email')?.textContent?.toLowerCase() || '';
+      const repos = Array.from(card.querySelectorAll('.repo-name')).map(el => el.textContent?.toLowerCase() || '');
+      const isActive = card.dataset.active === 'true';
+
+      const matchesSearch = searchTerm === '' || 
+        userName.includes(searchTerm) || 
+        userEmail.includes(searchTerm) ||
+        repos.some(r => r.includes(searchTerm));
+
+      const matchesStatus = statusFilter === 'all' ||
+        (statusFilter === 'active' && isActive) ||
+        (statusFilter === 'idle' && !isActive);
+
+      card.style.display = matchesSearch && matchesStatus ? '' : 'none';
+    });
+  }
+
+  searchInput?.addEventListener('input', filterAndSort);
+  filterStatus?.addEventListener('change', filterAndSort);
+  sortBy?.addEventListener('change', filterAndSort);
+
+  searchInput?.addEventListener('input', filterAndSort);
+  sortBy?.addEventListener('change', filterAndSort);
+
+  // Start auto-refresh
+  startAutoRefresh();
+
+  // Pause auto-refresh when user is interacting
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopAutoRefresh();
+    } else {
+      startAutoRefresh();
+    }
+  });
+</script>
+
+<style>
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .top-nav {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+  }
+
+  .nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .nav-link:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    text-decoration: none;
+  }
+
+  .nav-link.active {
+    color: var(--accent-blue);
+    background: rgba(88, 166, 255, 0.1);
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo svg {
+    color: var(--accent-blue);
+  }
+
+  .logo h1 {
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .stats-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    font-size: 14px;
+  }
+
+  .stat-pill.active .dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .refresh-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .refresh-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  .filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-secondary);
+  }
+
+  .filter-select {
+    padding: 10px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .filter-select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+  }
+
+  .users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 16px;
+  }
+
+  @media (max-width: 500px) {
+    .users-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    text-align: center;
+    color: var(--text-secondary);
+  }
+
+  .empty-state svg {
+    margin-bottom: 24px;
+    opacity: 0.5;
+  }
+
+  .empty-state h2 {
+    font-size: 20px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .empty-state p {
+    margin-bottom: 16px;
+  }
+
+  .empty-state code {
+    background: var(--bg-secondary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+</style>
