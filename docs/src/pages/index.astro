@@ -6,10 +6,6 @@ const currentVersion = "1.0.5";
 
 <Layout title="TGit Documentation">
   <div class="docs-container">
-    <nav class="top-nav">
-      <a href={import.meta.env.BASE_URL} class="nav-link active">Documentation</a>
-    </nav>
-
     <div class="docs-layout">
       <aside class="sidebar">
         <nav class="sidebar-nav">
@@ -394,32 +390,6 @@ npm run preview</code></pre>
   .main-content {
     flex: 1;
     min-width: 0;
-  }
-
-  .top-nav {
-    display: flex;
-    gap: 1rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1rem;
-  }
-
-  .nav-link {
-    color: var(--text-secondary);
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    transition: background 0.2s;
-  }
-
-  .nav-link:hover {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-  }
-
-  .nav-link.active {
-    background: var(--accent-blue);
-    color: white;
   }
 
   .hero {
