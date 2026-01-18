@@ -11,9 +11,9 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>tgit</ToolCommandName>
     <PackageId>TGit</PackageId>
-    <Version>1.0.8</Version>
+    <Version>1.1.0</Version>
     <Authors>Your Name</Authors>
-    <Description>Git CLI wrapper with activity tracking</Description>
+    <Description>Git CLI wrapper with activity tracking and tenant isolation</Description>
   </PropertyGroup>
 
   <ItemGroup>

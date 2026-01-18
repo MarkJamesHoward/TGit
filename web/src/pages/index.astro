@@ -3,13 +3,17 @@ import Layout from '../layouts/Layout.astro';
 import UserCard from '../components/UserCard.astro';
 import { getAllUsers, isUserActive, isCosmosConfigured } from '../lib/cosmos';
 
+// Get tenant from URL query parameter
+const url = new URL(Astro.request.url);
+const tenant = url.searchParams.get('tenant') || undefined;
+
 let users: Awaited<ReturnType<typeof getAllUsers>> = [];
 let activeCount = 0;
 let cosmosConfigured = isCosmosConfigured();
 
 if (cosmosConfigured) {
   try {
-    users = await getAllUsers();
+    users = await getAllUsers(tenant);
     activeCount = users.filter(u => isUserActive(u)).length;
   } catch (error) {
     console.error('Error fetching users from Cosmos DB:', error);
@@ -40,6 +44,7 @@ const serializedUsers = users.map(user => ({
           <path d="M16 8v16M8 12l8 4 8-4" stroke="currentColor" stroke-width="2"/>
         </svg>
         <h1>TGit Dashboard</h1>
+        {tenant && <span class="tenant-badge">{tenant}</span>}
       </div>
       <div class="stats-header">
         <div class="stat-pill active">
@@ -59,6 +64,16 @@ const serializedUsers = users.map(user => ({
     </header>
 
     <div class="filters">
+      <div class="tenant-input-group">
+        <input 
+          type="text" 
+          id="tenant-input" 
+          placeholder="Enter tenant ID..." 
+          class="search-input tenant-input"
+          value={tenant || ''}
+        />
+        <button id="tenant-btn" class="tenant-btn" title="Load Tenant">Go</button>
+      </div>
       <input 
         type="text" 
         id="search" 
@@ -128,6 +143,24 @@ const serializedUsers = users.map(user => ({
   // Manual refresh
   document.getElementById('refresh-btn')?.addEventListener('click', () => {
     window.location.reload();
+  });
+
+  // Tenant navigation
+  const tenantInput = document.getElementById('tenant-input') as HTMLInputElement;
+  const tenantBtn = document.getElementById('tenant-btn');
+  
+  function goToTenant() {
+    const tenant = tenantInput?.value.trim().toLowerCase();
+    if (tenant) {
+      window.location.href = `/?tenant=${encodeURIComponent(tenant)}`;
+    } else {
+      window.location.href = '/';
+    }
+  }
+  
+  tenantBtn?.addEventListener('click', goToTenant);
+  tenantInput?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') goToTenant();
   });
 
   // Search and filter functionality
@@ -240,6 +273,17 @@ const serializedUsers = users.map(user => ({
     font-weight: 600;
   }
 
+  .tenant-badge {
+    background: var(--accent-purple, #8b5cf6);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
   .stats-header {
     display: flex;
     align-items: center;
@@ -294,6 +338,34 @@ const serializedUsers = users.map(user => ({
     gap: 12px;
     margin-bottom: 24px;
     flex-wrap: wrap;
+  }
+
+  .tenant-input-group {
+    display: flex;
+    gap: 4px;
+  }
+
+  .tenant-input {
+    min-width: 150px;
+    flex: 0 1 auto;
+    border-radius: 8px 0 0 8px;
+  }
+
+  .tenant-btn {
+    padding: 10px 16px;
+    background: var(--accent-purple, #8b5cf6);
+    border: 1px solid var(--accent-purple, #8b5cf6);
+    border-radius: 0 8px 8px 0;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tenant-btn:hover {
+    background: #7c3aed;
+    border-color: #7c3aed;
   }
 
   .search-input {

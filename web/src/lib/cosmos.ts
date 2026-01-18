@@ -17,6 +17,7 @@ export interface GitActivity {
   remoteUrl?: string;
   modifiedFiles: FileEditInfo[];
   machineName: string;
+  tenant?: string;
 }
 
 export interface RepoActivity {
@@ -29,11 +30,12 @@ export interface RepoActivity {
 }
 
 export interface UserStatus {
-  id: string; // Cosmos DB requires an id field (we'll use email)
+  id: string; // Cosmos DB requires an id field (we'll use tenant::email)
   userName: string;
   userEmail: string;
   lastActivity: string;
   activities: Record<string, RepoActivity>; // keyed by repoName::machineName
+  tenant: string;
 }
 
 // Activity expiry time (30 minutes of inactivity = user is idle)
@@ -81,7 +83,8 @@ async function getContainer(): Promise<Container> {
 
 export async function recordActivity(activity: GitActivity): Promise<void> {
   const cont = await getContainer();
-  const id = activity.userEmail.toLowerCase();
+  const tenant = (activity.tenant || "default").toLowerCase();
+  const id = `${tenant}::${activity.userEmail.toLowerCase()}`;
   
   // Try to get existing user
   let user: UserStatus;
@@ -95,7 +98,8 @@ export async function recordActivity(activity: GitActivity): Promise<void> {
         userName: activity.userName,
         userEmail: activity.userEmail,
         lastActivity: activity.timestamp,
-        activities: {}
+        activities: {},
+        tenant
       };
     }
   } catch (error: any) {
@@ -105,7 +109,8 @@ export async function recordActivity(activity: GitActivity): Promise<void> {
         userName: activity.userName,
         userEmail: activity.userEmail,
         lastActivity: activity.timestamp,
-        activities: {}
+        activities: {},
+        tenant
       };
     } else {
       throw error;
@@ -133,11 +138,21 @@ export async function recordActivity(activity: GitActivity): Promise<void> {
   await cont.items.upsert(user);
 }
 
-export async function getAllUsers(): Promise<UserStatus[]> {
+export async function getAllUsers(tenant?: string): Promise<UserStatus[]> {
   const cont = await getContainer();
   
+  let query = "SELECT * FROM c";
+  const parameters: { name: string; value: string }[] = [];
+  
+  if (tenant) {
+    query += " WHERE c.tenant = @tenant";
+    parameters.push({ name: "@tenant", value: tenant.toLowerCase() });
+  }
+  
+  query += " ORDER BY c.lastActivity DESC";
+  
   const { resources } = await cont.items
-    .query<UserStatus>("SELECT * FROM c ORDER BY c.lastActivity DESC")
+    .query<UserStatus>({ query, parameters })
     .fetchAll();
   
   return resources;

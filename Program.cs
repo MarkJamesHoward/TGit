@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace TGit;
 
-class Program
+partial class Program
 {
     // Configure your API endpoint via TGIT_API_URL environment variable
     // Default points to Azure production
@@ -11,9 +11,20 @@ class Program
         ?? "https://tgit-cjcgafe3fbbgb3d3.newzealandnorth-01.azurewebsites.net/api/git-activity";
     
     private static readonly HttpClient HttpClient = new();
+    
+    // Config file location
+    private static readonly string ConfigDir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".tgit");
+    private static readonly string ConfigFile = Path.Combine(ConfigDir, "config.json");
 
     static async Task<int> Main(string[] args)
     {
+        // Handle tgit config commands
+        if (args.Length >= 1 && args[0].Equals("config", StringComparison.OrdinalIgnoreCase))
+        {
+            return HandleConfigCommand(args.Skip(1).ToArray());
+        }
+        
         // Pass through all arguments to git
         var exitCode = await ExecuteGitCommand(args);
         
@@ -165,7 +176,8 @@ class Program
             Branch = branch ?? "unknown",
             RemoteUrl = remoteUrl,
             ModifiedFiles = modifiedFiles,
-            MachineName = Environment.MachineName
+            MachineName = Environment.MachineName,
+            Tenant = GetTenant()
         };
     }
 
@@ -329,6 +341,7 @@ public class GitTrackingInfo
     public string? RemoteUrl { get; set; }
     public List<FileEditInfo> ModifiedFiles { get; set; } = [];
     public string MachineName { get; set; } = "";
+    public string Tenant { get; set; } = "default";
 }
 
 public class FileEditInfo
@@ -336,4 +349,78 @@ public class FileEditInfo
     public string FilePath { get; set; } = "";
     public string Status { get; set; } = "";
     public bool IsStaged { get; set; }
+}
+
+public class TGitConfig
+{
+    public string Tenant { get; set; } = "default";
+}
+
+partial class Program
+{
+    private static int HandleConfigCommand(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            // Show current config
+            var config = LoadConfig();
+            Console.WriteLine($"tenant = {config.Tenant}");
+            return 0;
+        }
+        
+        if (args.Length == 1 && args[0].Equals("tenant", StringComparison.OrdinalIgnoreCase))
+        {
+            // Show current tenant
+            var config = LoadConfig();
+            Console.WriteLine(config.Tenant);
+            return 0;
+        }
+        
+        if (args.Length == 2 && args[0].Equals("tenant", StringComparison.OrdinalIgnoreCase))
+        {
+            // Set tenant
+            var config = LoadConfig();
+            config.Tenant = args[1].ToLowerInvariant().Trim();
+            SaveConfig(config);
+            Console.WriteLine($"Tenant set to: {config.Tenant}");
+            return 0;
+        }
+        
+        Console.WriteLine("Usage: tgit config tenant [company-name]");
+        Console.WriteLine("  tgit config              - Show all config");
+        Console.WriteLine("  tgit config tenant       - Show current tenant");
+        Console.WriteLine("  tgit config tenant acme  - Set tenant to 'acme'");
+        return 1;
+    }
+    
+    private static TGitConfig LoadConfig()
+    {
+        try
+        {
+            if (File.Exists(ConfigFile))
+            {
+                var json = File.ReadAllText(ConfigFile);
+                return JsonSerializer.Deserialize<TGitConfig>(json) ?? new TGitConfig();
+            }
+        }
+        catch { }
+        return new TGitConfig();
+    }
+    
+    private static void SaveConfig(TGitConfig config)
+    {
+        Directory.CreateDirectory(ConfigDir);
+        var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(ConfigFile, json);
+    }
+    
+    private static string GetTenant()
+    {
+        // Environment variable takes precedence
+        var envTenant = Environment.GetEnvironmentVariable("TGIT_TENANT");
+        if (!string.IsNullOrEmpty(envTenant)) return envTenant.ToLowerInvariant();
+        
+        // Fall back to config file
+        return LoadConfig().Tenant;
+    }
 }
