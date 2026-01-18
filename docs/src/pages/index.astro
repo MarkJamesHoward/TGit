@@ -10,7 +10,22 @@ const currentVersion = "1.0.5";
       <a href={import.meta.env.BASE_URL} class="nav-link active">Documentation</a>
     </nav>
 
-    <header class="hero">
+    <div class="docs-layout">
+      <aside class="sidebar">
+        <nav class="sidebar-nav">
+          <a href="#about" class="sidebar-link">About</a>
+          <a href="#download" class="sidebar-link">Download</a>
+          <a href="#windows-install" class="sidebar-link">Windows Install</a>
+          <a href="#macos-install" class="sidebar-link">macOS Install</a>
+          <a href="#linux-install" class="sidebar-link">Linux Install</a>
+          <a href="#usage" class="sidebar-link">Usage</a>
+          <a href="#configuration" class="sidebar-link">Configuration</a>
+          <a href="#self-hosting" class="sidebar-link">Self Hosting</a>
+        </nav>
+      </aside>
+
+      <div class="main-content">
+        <header class="hero">
       <div class="hero-content">
         <div class="logo-large">
           <svg width="64" height="64" viewBox="0 0 32 32" fill="none">
@@ -322,6 +337,8 @@ npm run preview</code></pre>
         </div>
       </section>
     </main>
+      </div>
+    </div>
 
     <footer>
       <p>TGit v{currentVersion} • Built with ❤️ for developer teams</p>
@@ -333,6 +350,50 @@ npm run preview</code></pre>
   .docs-container {
     width: 100%;
     padding: 0 2rem;
+  }
+
+  .docs-layout {
+    display: flex;
+    gap: 2rem;
+  }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 1rem;
+    height: fit-content;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 0;
+  }
+
+  .sidebar-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
+  }
+
+  .sidebar-link:hover {
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border-left-color: var(--accent-blue);
+    text-decoration: none;
+  }
+
+  .main-content {
+    flex: 1;
+    min-width: 0;
   }
 
   .top-nav {
@@ -646,6 +707,14 @@ npm run preview</code></pre>
   }
 
   @media (max-width: 768px) {
+    .sidebar {
+      display: none;
+    }
+
+    .docs-layout {
+      flex-direction: column;
+    }
+
     .hero h1 {
       font-size: 2rem;
     }
