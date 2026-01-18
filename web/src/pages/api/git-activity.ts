@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { recordActivity, type GitActivity } from "../../lib/cosmos";
+import { recordActivity, type GitActivity } from "../../lib/storage";
 
 export const POST: APIRoute = async ({ request }) => {
   try {

@@ -2,6 +2,7 @@
 bin/
 obj/
 nupkg/
+publish/
 
 # IDE
 .vs/
@@ -11,3 +12,10 @@ nupkg/
 
 # macOS
 .DS_Store
+
+# Web app data (JSON storage)
+web/data/users-*.json
+
+# Deploy artifacts
+deploy.zip
+web/deploy/

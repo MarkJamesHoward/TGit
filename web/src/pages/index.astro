@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import UserCard from '../components/UserCard.astro';
-import { getAllUsers, isUserActive, isCosmosConfigured } from '../lib/cosmos';
+import { getAllUsers, isUserActive, isStorageConfigured, getStorageType } from '../lib/storage';
 
 // Get tenant from URL query parameter
 const url = new URL(Astro.request.url);
@@ -9,14 +9,15 @@ const tenant = url.searchParams.get('tenant') || undefined;
 
 let users: Awaited<ReturnType<typeof getAllUsers>> = [];
 let activeCount = 0;
-let cosmosConfigured = isCosmosConfigured();
+let storageConfigured = isStorageConfigured();
+const storageType = getStorageType();
 
-if (cosmosConfigured) {
+if (storageConfigured) {
   try {
     users = await getAllUsers(tenant);
     activeCount = users.filter(u => isUserActive(u)).length;
   } catch (error) {
-    console.error('Error fetching users from Cosmos DB:', error);
+    console.error('Error fetching users:', error);
   }
 }
 
@@ -47,6 +48,16 @@ const serializedUsers = users.map(user => ({
         {tenant && <span class="tenant-badge">{tenant}</span>}
       </div>
       <div class="stats-header">
+        <div class="stat-pill storage" title={`Storage: ${storageType.toUpperCase()}`}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            {storageType === 'json' ? (
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6"/>
+            ) : (
+              <path d="M12 2C6.48 2 2 4.69 2 8v8c0 3.31 4.48 6 10 6s10-2.69 10-6V8c0-3.31-4.48-6-10-6z M2 8c0 3.31 4.48 6 10 6s10-2.69 10-6"/>
+            )}
+          </svg>
+          {storageType}
+        </div>
         <div class="stat-pill active">
           <span class="dot"></span>
           {activeCount} active
@@ -93,15 +104,17 @@ const serializedUsers = users.map(user => ({
     </div>
 
     <div class="users-grid" id="users-grid">
-      {!cosmosConfigured ? (
+      {!storageConfigured ? (
         <div class="empty-state config-warning">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
             <line x1="12" y1="9" x2="12" y2="13"/>
             <line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
-          <h2>Database Not Configured</h2>
-          <p>Set the following environment variables to connect to Azure Cosmos DB:</p>
+          <h2>Storage Not Configured</h2>
+          <p>Set STORAGE_TYPE=json for file storage, or configure Cosmos DB:</p>
+          <code>STORAGE_TYPE=json</code>
+          <p>Or for Cosmos DB:</p>
           <code>COSMOS_ENDPOINT=https://your-account.documents.azure.com:443/</code>
           <code>COSMOS_KEY=your-primary-key</code>
         </div>
@@ -307,6 +320,20 @@ const serializedUsers = users.map(user => ({
     background: var(--accent-green);
     border-radius: 50%;
     animation: pulse 2s infinite;
+  }
+
+  .stat-pill.storage {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 500;
+    gap: 6px;
+  }
+
+  .stat-pill.storage svg {
+    opacity: 0.8;
   }
 
   @keyframes pulse {

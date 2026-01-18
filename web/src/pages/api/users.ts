@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getAllUsers, getActiveUsers, isUserActive, type UserStatus, type RepoActivity } from "../../lib/cosmos";
+import { getAllUsers, getActiveUsers, isUserActive, type UserStatus, type RepoActivity } from "../../lib/storage";
 
 interface SerializableRepoActivity {
   repoName: string;
