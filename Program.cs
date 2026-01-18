@@ -19,6 +19,14 @@ partial class Program
 
     static async Task<int> Main(string[] args)
     {
+        // Handle tgit --help or tgit help
+        if (args.Length == 0 || 
+            (args.Length == 1 && (args[0] == "--help" || args[0] == "-h" || args[0] == "help" || args[0] == "--version" || args[0] == "-v")))
+        {
+            PrintHelp();
+            return 0;
+        }
+        
         // Handle tgit config commands
         if (args.Length >= 1 && args[0].Equals("config", StringComparison.OrdinalIgnoreCase))
         {
@@ -422,5 +430,46 @@ partial class Program
         
         // Fall back to config file
         return LoadConfig().Tenant;
+    }
+    
+    private static void PrintHelp()
+    {
+        var config = LoadConfig();
+        var version = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "1.1.1";
+        Console.WriteLine($@"
+TGit - Git CLI wrapper with activity tracking
+
+Version: {version}
+Tenant:  {config.Tenant}
+
+TGIT COMMANDS:
+  tgit config                    Show current configuration
+  tgit config tenant             Show current tenant ID
+  tgit config tenant <name>      Set tenant ID for data isolation
+
+  tgit --help, -h, help          Show this help message
+  tgit --version, -v             Show version information
+
+GIT PASSTHROUGH:
+  All other commands are passed directly to git with activity tracking.
+  
+  Examples:
+    tgit status                  Run 'git status' and track activity
+    tgit commit -m ""message""     Run 'git commit' and track activity
+    tgit push                    Run 'git push' and track activity
+
+ENVIRONMENT VARIABLES:
+  TGIT_TENANT                    Override tenant ID (takes precedence over config)
+  TGIT_API_URL                   Override API endpoint URL
+  TGIT_DEBUG=1                   Enable debug output
+
+DASHBOARD:
+  View your activity at:
+  https://tgit-cjcgafe3fbbgb3d3.newzealandnorth-01.azurewebsites.net/?tenant={config.Tenant}
+
+TRACKED COMMANDS:
+  status, add, commit, checkout, switch, restore, reset,
+  merge, rebase, cherry-pick, revert, stash, pull, push, fetch, clone
+");
     }
 }
