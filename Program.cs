@@ -417,7 +417,7 @@ public class FileEditInfo
 
 public class TGitConfig
 {
-    public string Tenant { get; set; } = "default";
+    public string Tenant { get; set; } = "";
 }
 
 partial class Program
@@ -464,11 +464,36 @@ partial class Program
             if (File.Exists(ConfigFile))
             {
                 var json = File.ReadAllText(ConfigFile);
-                return JsonSerializer.Deserialize<TGitConfig>(json) ?? new TGitConfig();
+                var config = JsonSerializer.Deserialize<TGitConfig>(json);
+                if (config != null && !string.IsNullOrEmpty(config.Tenant))
+                {
+                    return config;
+                }
             }
         }
         catch { }
-        return new TGitConfig();
+
+        // First run - generate a unique tenant ID and save it
+        var newConfig = new TGitConfig { Tenant = GenerateUniqueTenantId() };
+        SaveConfig(newConfig);
+        return newConfig;
+    }
+
+    private static string GenerateUniqueTenantId()
+    {
+        // Generate a unique tenant ID based on machine name and a random suffix
+        var machinePart = Environment.MachineName.ToLowerInvariant();
+        // Sanitize machine name to only allow alphanumeric and hyphens
+        machinePart = new string(
+            machinePart.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray()
+        );
+        if (machinePart.Length > 12)
+            machinePart = machinePart[..12];
+
+        // Add random suffix for uniqueness
+        var randomSuffix = Guid.NewGuid().ToString("N")[..6];
+
+        return $"{machinePart}-{randomSuffix}";
     }
 
     private static void SaveConfig(TGitConfig config)
@@ -526,7 +551,7 @@ ENVIRONMENT VARIABLES:
 
 DASHBOARD:
   View your activity at:
-  https://tgit-cjcgafe3fbbgb3d3.newzealandnorth-01.azurewebsites.net/?tenant={config.Tenant}
+  https://tgit.app/?tenant={config.Tenant}
 
 TRACKED COMMANDS:
   status, add, commit, checkout, switch, restore, reset,

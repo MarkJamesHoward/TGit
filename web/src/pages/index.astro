@@ -3,9 +3,9 @@ import Layout from '../layouts/Layout.astro';
 import UserCard from '../components/UserCard.astro';
 import { getAllUsers, isUserActive, isStorageConfigured, getStorageType } from '../lib/storage';
 
-// Get tenant from URL query parameter
+// Get tenant from URL query parameter - defaults to 'default'
 const url = new URL(Astro.request.url);
-const tenant = url.searchParams.get('tenant') || undefined;
+const tenant = url.searchParams.get('tenant') || 'default';
 
 let users: Awaited<ReturnType<typeof getAllUsers>> = [];
 let activeCount = 0;
@@ -45,7 +45,7 @@ const serializedUsers = users.map(user => ({
           <path d="M16 8v16M8 12l8 4 8-4" stroke="currentColor" stroke-width="2"/>
         </svg>
         <h1>TGit Dashboard</h1>
-        {tenant && <span class="tenant-badge">{tenant}</span>}
+        <span class="tenant-badge">{tenant}</span>
       </div>
       <div class="stats-header">
         <div class="stat-pill storage" title={`Storage: ${storageType.toUpperCase()}`}>
@@ -81,7 +81,7 @@ const serializedUsers = users.map(user => ({
           id="tenant-input" 
           placeholder="Enter tenant ID..." 
           class="search-input tenant-input"
-          value={tenant || ''}
+          value={tenant}
         />
         <button id="tenant-btn" class="tenant-btn" title="Load Tenant">Go</button>
       </div>
@@ -163,12 +163,8 @@ const serializedUsers = users.map(user => ({
   const tenantBtn = document.getElementById('tenant-btn');
   
   function goToTenant() {
-    const tenant = tenantInput?.value.trim().toLowerCase();
-    if (tenant) {
-      window.location.href = `/?tenant=${encodeURIComponent(tenant)}`;
-    } else {
-      window.location.href = '/';
-    }
+    const tenant = tenantInput?.value.trim().toLowerCase() || 'default';
+    window.location.href = `/?tenant=${encodeURIComponent(tenant)}`;
   }
   
   tenantBtn?.addEventListener('click', goToTenant);
