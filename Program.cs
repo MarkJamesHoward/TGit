@@ -550,8 +550,8 @@ ENVIRONMENT VARIABLES:
   TGIT_DEBUG=1                   Enable debug output
 
 DASHBOARD:
-  View your activity at:
-  https://tgit.app/?tenant={config.Tenant}
+  View your activity at https://tgit.app
+  Enter your tenant ID: {config.Tenant}
 
 TRACKED COMMANDS:
   status, add, commit, checkout, switch, restore, reset,
