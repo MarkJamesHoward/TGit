@@ -9,13 +9,27 @@
     <!-- Global Tool Properties -->
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>tgit</ToolCommandName>
+    
+    <!-- NuGet Package Properties -->
     <PackageId>TGit</PackageId>
     <Version>1.2.0</Version>
-    <Authors>Your Name</Authors>
-    <Description>Git CLI wrapper with activity tracking and tenant isolation</Description>
+    <Authors>Mark James Howard</Authors>
+    <Description>Git CLI wrapper with real-time activity tracking dashboard. Track commits, pushes, and file changes across your team with tenant isolation.</Description>
+    <PackageTags>git;cli;developer-tools;activity-tracker;dashboard;productivity</PackageTags>
+    <PackageProjectUrl>https://github.com/MarkJamesHoward/TGit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MarkJamesHoward/TGit</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="icon.png" Pack="true" PackagePath="\" Condition="Exists('icon.png')" />
   </ItemGroup>
 </Project>
