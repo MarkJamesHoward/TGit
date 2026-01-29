@@ -29,6 +29,14 @@ TGit/
 
 ### CLI Tool
 
+#### Install via winget (recommended)
+
+```powershell
+winget install MarkJamesHoward.TGit
+```
+
+#### Or build and install manually
+
 ```bash
 # Build and install as global tool
 cd TGit
