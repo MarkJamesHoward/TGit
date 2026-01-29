@@ -1,34 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import UserCard from '../components/UserCard.astro';
-import { getAllUsers, isUserActive, isStorageConfigured, getStorageType } from '../lib/storage';
 
-// Get tenant from URL query parameter - defaults to 'default'
-const url = new URL(Astro.request.url);
-const tenant = url.searchParams.get('tenant') || 'default';
-
-let users: Awaited<ReturnType<typeof getAllUsers>> = [];
-let activeCount = 0;
-let storageConfigured = isStorageConfigured();
-const storageType = getStorageType();
-
-if (storageConfigured) {
-  try {
-    users = await getAllUsers(tenant);
-    activeCount = users.filter(u => isUserActive(u)).length;
-  } catch (error) {
-    console.error('Error fetching users:', error);
-  }
-}
-
-// Serialize users for the template
-const serializedUsers = users.map(user => ({
-  userName: user.userName,
-  userEmail: user.userEmail,
-  lastActivity: user.lastActivity,
-  isActive: isUserActive(user),
-  activities: Object.values(user.activities)
-}));
+const apiBaseUrl = import.meta.env.PUBLIC_DASHBOARD_URL || '';
 ---
 
 <Layout title="TGit Dashboard">
@@ -40,25 +13,14 @@ const serializedUsers = users.map(user => ({
           <path d="M16 8v16M8 12l8 4 8-4" stroke="currentColor" stroke-width="2"/>
         </svg>
         <h1>TGit Dashboard</h1>
-
       </div>
       <div class="stats-header">
-        <div class="stat-pill storage" title={`Storage: ${storageType.toUpperCase()}`}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            {storageType === 'json' ? (
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6"/>
-            ) : (
-              <path d="M12 2C6.48 2 2 4.69 2 8v8c0 3.31 4.48 6 10 6s10-2.69 10-6V8c0-3.31-4.48-6-10-6z M2 8c0 3.31 4.48 6 10 6s10-2.69 10-6"/>
-            )}
-          </svg>
-          {storageType}
-        </div>
         <div class="stat-pill active">
           <span class="dot"></span>
-          {activeCount} active
+          <span id="active-count">0</span> active
         </div>
         <div class="stat-pill total">
-          {users.length} total users
+          <span id="total-count">0</span> total users
         </div>
         <button id="refresh-btn" class="refresh-btn" title="Refresh">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -76,93 +38,220 @@ const serializedUsers = users.map(user => ({
           id="tenant-input"
           placeholder="Enter tenant ID..."
           class="search-input tenant-input"
-          value={tenant}
         />
         <button id="tenant-btn" class="tenant-btn" title="Load Tenant">Go</button>
       </div>
     </div>
 
     <div class="users-grid" id="users-grid">
-      {!storageConfigured ? (
+      <div class="empty-state" id="loading-state">
+        <p>Loading...</p>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script is:inline define:vars={{ apiBaseUrl }}>
+  window.__API_BASE_URL__ = apiBaseUrl;
+</script>
+
+<script>
+  const API_BASE_URL = (window as any).__API_BASE_URL__ || '';
+
+  function getTimeSince(timestamp: string): string {
+    const now = Date.now();
+    const activityTime = new Date(timestamp).getTime();
+    const diffMs = now - activityTime;
+    const minutes = Math.floor(diffMs / 60000);
+    const hours = Math.floor(diffMs / 3600000);
+    const days = Math.floor(diffMs / 86400000);
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  }
+
+  function getStatusColor(status: string): string {
+    switch (status) {
+      case 'Added': return 'var(--accent-green)';
+      case 'Modified': return 'var(--accent-yellow)';
+      case 'Deleted': return 'var(--accent-red)';
+      case 'Renamed': return 'var(--accent-purple)';
+      default: return 'var(--text-secondary)';
+    }
+  }
+
+  function getStatusIcon(status: string): string {
+    switch (status) {
+      case 'Added': return '+';
+      case 'Modified': return '~';
+      case 'Deleted': return '-';
+      case 'Renamed': return '→';
+      case 'Untracked': return '?';
+      default: return '•';
+    }
+  }
+
+  function getInitials(name: string): string {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function renderUserCard(user: any): string {
+    const totalFiles = user.activities.reduce((sum: number, a: any) => sum + a.modifiedFiles.length, 0);
+    const avatarColor = `hsl(${user.userName.length * 30 % 360}, 60%, 40%)`;
+
+    const activitiesHtml = user.activities.map((activity: any) => {
+      const filesHtml = activity.modifiedFiles.slice(0, 5).map((file: any) => `
+        <div class="file">
+          <span class="file-status" style="color: ${getStatusColor(file.status)}">${getStatusIcon(file.status)}</span>
+          <span class="file-path">${escapeHtml(file.filePath)}</span>
+          ${file.isStaged ? '<span class="staged-badge">staged</span>' : ''}
+        </div>
+      `).join('');
+
+      const moreFiles = activity.modifiedFiles.length > 5
+        ? `<div class="more-files">+${activity.modifiedFiles.length - 5} more files</div>`
+        : '';
+
+      return `
+        <div class="repo">
+          <div class="repo-header">
+            <span class="repo-name">${escapeHtml(activity.repoName)}</span>
+            <span class="branch">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path fill-rule="evenodd" d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5zM3.5 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"></path>
+              </svg>
+              ${escapeHtml(activity.branch)}
+            </span>
+            <span class="machine">${escapeHtml(activity.machineName)}</span>
+          </div>
+          <div class="files">${filesHtml}${moreFiles}</div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="user-card" data-active="${user.isActive}">
+        <div class="user-header">
+          <div class="avatar" style="background-color: ${avatarColor}">${getInitials(user.userName)}</div>
+          <div class="user-info">
+            <div class="user-name">
+              ${escapeHtml(user.userName)}
+              <span class="status-badge ${user.isActive ? 'active' : 'idle'}">${user.isActive ? 'Active' : 'Idle'}</span>
+            </div>
+            <div class="user-email">${escapeHtml(user.userEmail)}</div>
+            <div class="last-activity">Last activity: ${getTimeSince(user.lastActivity)}</div>
+          </div>
+          <div class="stats">
+            <div class="stat">
+              <span class="stat-value">${user.activities.length}</span>
+              <span class="stat-label">${user.activities.length === 1 ? 'repo' : 'repos'}</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">${totalFiles}</span>
+              <span class="stat-label">${totalFiles === 1 ? 'file' : 'files'}</span>
+            </div>
+          </div>
+        </div>
+        <div class="repos">${activitiesHtml}</div>
+      </div>
+    `;
+  }
+
+  async function loadUsers() {
+    const grid = document.getElementById('users-grid')!;
+    const activeCountEl = document.getElementById('active-count')!;
+    const totalCountEl = document.getElementById('total-count')!;
+    const tenantInput = document.getElementById('tenant-input') as HTMLInputElement;
+
+    const params = new URLSearchParams(window.location.search);
+    const tenant = params.get('tenant') || 'default';
+    tenantInput.value = tenant;
+
+    try {
+      const url = `${API_BASE_URL}/api/users?tenant=${encodeURIComponent(tenant)}`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      const users = data.users || [];
+
+      activeCountEl.textContent = String(data.activeCount || 0);
+      totalCountEl.textContent = String(data.totalCount || 0);
+
+      if (users.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <h2>No Activity Yet</h2>
+            <p>When developers use TGit, their activity will appear here.</p>
+          </div>
+        `;
+      } else {
+        grid.innerHTML = users.map(renderUserCard).join('');
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      grid.innerHTML = `
         <div class="empty-state config-warning">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
             <line x1="12" y1="9" x2="12" y2="13"/>
             <line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
-          <h2>Storage Not Configured</h2>
-          <p>Set STORAGE_TYPE=json for file storage, or configure Cosmos DB:</p>
-          <code>STORAGE_TYPE=json</code>
-          <p>Or for Cosmos DB:</p>
-          <code>COSMOS_ENDPOINT=https://your-account.documents.azure.com:443/</code>
-          <code>COSMOS_KEY=your-primary-key</code>
+          <h2>Could not connect to API</h2>
+          <p>Make sure the TGit API is running and accessible.</p>
+          <code>${API_BASE_URL || '(no API URL configured)'}</code>
         </div>
-      ) : serializedUsers.length === 0 ? (
-        <div class="empty-state">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-          <h2>No Activity Yet</h2>
-          <p>When developers use TGit, their activity will appear here.</p>
-          <code>tgit add . && tgit commit -m "message"</code>
-        </div>
-      ) : (
-        serializedUsers.map((user) => (
-          <UserCard {...user} />
-        ))
-      )}
-    </div>
-  </div>
-</Layout>
-
-<script>
-  // Auto-refresh every 30 seconds
-  let refreshInterval: number;
-
-  function startAutoRefresh() {
-    refreshInterval = setInterval(() => {
-      window.location.reload();
-    }, 30000);
+      `;
+    }
   }
-
-  function stopAutoRefresh() {
-    clearInterval(refreshInterval);
-  }
-
-  // Manual refresh
-  document.getElementById('refresh-btn')?.addEventListener('click', () => {
-    window.location.reload();
-  });
 
   // Tenant navigation
   const tenantInput = document.getElementById('tenant-input') as HTMLInputElement;
   const tenantBtn = document.getElementById('tenant-btn');
-  
+
   function goToTenant() {
     const tenant = tenantInput?.value.trim().toLowerCase() || 'default';
     window.location.href = `/?tenant=${encodeURIComponent(tenant)}`;
   }
-  
+
   tenantBtn?.addEventListener('click', goToTenant);
   tenantInput?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') goToTenant();
   });
 
+  // Manual refresh
+  document.getElementById('refresh-btn')?.addEventListener('click', () => loadUsers());
 
-  // Start auto-refresh
-  startAutoRefresh();
+  // Auto-refresh every 30 seconds
+  let refreshInterval = setInterval(() => loadUsers(), 30000);
 
-  // Pause auto-refresh when user is interacting
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      stopAutoRefresh();
+      clearInterval(refreshInterval);
     } else {
-      startAutoRefresh();
+      loadUsers();
+      refreshInterval = setInterval(() => loadUsers(), 30000);
     }
   });
+
+  // Initial load
+  loadUsers();
 </script>
 
 <style>
@@ -170,33 +259,6 @@ const serializedUsers = users.map(user => ({
     max-width: 1400px;
     margin: 0 auto;
     padding: 24px;
-  }
-
-  .top-nav {
-    display: flex;
-    gap: 1rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1.5rem;
-  }
-
-  .nav-link {
-    color: var(--text-secondary);
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    transition: all 0.2s;
-  }
-
-  .nav-link:hover {
-    color: var(--text-primary);
-    background: var(--bg-tertiary);
-    text-decoration: none;
-  }
-
-  .nav-link.active {
-    color: var(--accent-blue);
-    background: rgba(88, 166, 255, 0.1);
   }
 
   header {
@@ -223,7 +285,6 @@ const serializedUsers = users.map(user => ({
     font-weight: 600;
   }
 
-
   .stats-header {
     display: flex;
     align-items: center;
@@ -247,20 +308,6 @@ const serializedUsers = users.map(user => ({
     background: var(--accent-green);
     border-radius: 50%;
     animation: pulse 2s infinite;
-  }
-
-  .stat-pill.storage {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.3);
-    color: #3b82f6;
-    text-transform: uppercase;
-    font-size: 12px;
-    font-weight: 500;
-    gap: 6px;
-  }
-
-  .stat-pill.storage svg {
-    opacity: 0.8;
   }
 
   @keyframes pulse {
@@ -396,5 +443,191 @@ const serializedUsers = users.map(user => ({
 
   .config-warning h2 {
     color: var(--accent-yellow);
+  }
+</style>
+
+<style is:global>
+  .user-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .user-card:hover {
+    border-color: var(--accent-blue);
+  }
+
+  .user-card[data-active="true"] {
+    border-left: 3px solid var(--accent-green);
+  }
+
+  .user-card[data-active="false"] {
+    border-left: 3px solid var(--text-secondary);
+    opacity: 0.7;
+  }
+
+  .user-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    flex-shrink: 0;
+    color: white;
+  }
+
+  .user-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .user-name {
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .status-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+  }
+
+  .status-badge.active {
+    background: rgba(63, 185, 80, 0.2);
+    color: var(--accent-green);
+  }
+
+  .status-badge.idle {
+    background: rgba(139, 148, 158, 0.2);
+    color: var(--text-secondary);
+  }
+
+  .user-email {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .last-activity {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent-blue);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .repos {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .repo {
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .repo-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .repo-name {
+    font-weight: 600;
+    color: var(--accent-blue);
+  }
+
+  .branch {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .machine {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-left: auto;
+  }
+
+  .files {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  .file-status {
+    font-weight: 700;
+    width: 12px;
+    text-align: center;
+  }
+
+  .file-path {
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .staged-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    background: rgba(88, 166, 255, 0.2);
+    color: var(--accent-blue);
+    border-radius: 4px;
+    font-family: inherit;
+  }
+
+  .more-files {
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding-left: 20px;
   }
 </style>

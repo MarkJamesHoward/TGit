@@ -1,0 +1,44 @@
+name: Deploy Dashboard to Azure Static Web App
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'dashboard/**'
+      - 'api/**'
+      - '.github/workflows/dashboard.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './dashboard/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./dashboard
+        run: npm ci
+
+      - name: Build static site
+        working-directory: ./dashboard
+        run: npm run build
+        env:
+          PUBLIC_DASHBOARD_URL: ${{ secrets.PUBLIC_DASHBOARD_URL }}
+
+      - name: Deploy to Azure Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_DASHBOARD_STATIC_WEB_APPS_TOKEN }}
+          action: "upload"
+          skip_app_build: true
+          app_location: "./dashboard/dist"
