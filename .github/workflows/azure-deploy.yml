@@ -1,47 +1,41 @@
-name: Deploy Dashboard to Azure App Service
+name: Deploy API to Azure App Service
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'web/**'
+      - 'api/**'
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: web/package-lock.json
+          dotnet-version: '9.0.x'
 
-      - name: Install dependencies
-        working-directory: ./web
-        run: npm ci
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ./api
 
       - name: Build
-        working-directory: ./web
-        run: npm run build
+        run: dotnet build --configuration Release --no-restore
+        working-directory: ./api
 
-      - name: Create deployment package
-        working-directory: ./web
-        run: |
-          mkdir -p deploy
-          cp -r dist deploy/
-          cp package.json deploy/
-          cd deploy && npm install --omit=dev
-          
+      - name: Publish
+        run: dotnet publish --configuration Release --no-build --output ./publish
+        working-directory: ./api
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'TGit'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./web/deploy
+          package: ./api/publish
