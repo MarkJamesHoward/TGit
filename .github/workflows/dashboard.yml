@@ -33,7 +33,7 @@ jobs:
         working-directory: ./dashboard
         run: npm run build
         env:
-          PUBLIC_DASHBOARD_URL: ${{ secrets.PUBLIC_DASHBOARD_URL }}
+          PUBLIC_API_BASE_URL: ${{ secrets.PUBLIC_API_BASE_URL }}
 
       - name: Deploy to Azure Static Web App
         uses: Azure/static-web-apps-deploy@v1

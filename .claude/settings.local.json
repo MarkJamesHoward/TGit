@@ -11,7 +11,12 @@
       "Bash(git push)",
       "Bash(git pull:*)",
       "Bash(git mv:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(az staticwebapp:*)",
+      "Bash(gh secret list:*)",
+      "Bash(gh secret get:*)",
+      "Bash(az webapp update:*)",
+      "Bash(az resource update:*)"
     ]
   }
 }
