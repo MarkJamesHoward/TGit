@@ -1,0 +1,53 @@
+@TGitApi_HostAddress = http://localhost:5000
+
+### Get all users
+GET {{TGitApi_HostAddress}}/api/users
+Accept: application/json
+
+###
+
+### Get active users only
+GET {{TGitApi_HostAddress}}/api/users?active=true
+Accept: application/json
+
+###
+
+### Record git activity
+POST {{TGitApi_HostAddress}}/api/git-activity
+Content-Type: application/json
+
+{
+  "timestamp": "2024-01-30T10:30:00Z",
+  "userName": "Test User",
+  "userEmail": "test@example.com",
+  "repoName": "test-repo",
+  "branch": "main",
+  "remoteUrl": "https://github.com/user/repo.git",
+  "modifiedFiles": [
+    {
+      "filePath": "src/index.js",
+      "status": "modified",
+      "isStaged": true
+    },
+    {
+      "filePath": "README.md",
+      "status": "modified",
+      "isStaged": false
+    }
+  ],
+  "machineName": "test-machine",
+  "tenant": "default"
+}
+
+###
+
+### Record git activity - Missing required fields (should fail)
+POST {{TGitApi_HostAddress}}/api/git-activity
+Content-Type: application/json
+
+{
+  "timestamp": "2024-01-30T10:30:00Z",
+  "userName": "Test User"
+}
+
+###

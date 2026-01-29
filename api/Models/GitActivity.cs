@@ -1,0 +1,14 @@
+namespace TGitApi.Models;
+
+public class GitActivity
+{
+    public string Timestamp { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
+    public string UserEmail { get; set; } = string.Empty;
+    public string RepoName { get; set; } = string.Empty;
+    public string Branch { get; set; } = string.Empty;
+    public string? RemoteUrl { get; set; }
+    public List<FileEditInfo> ModifiedFiles { get; set; } = new();
+    public string MachineName { get; set; } = string.Empty;
+    public string? Tenant { get; set; }
+}
