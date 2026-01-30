@@ -123,7 +123,9 @@ jobs:
         run: dotnet pack TGit.csproj -c Release -p:PackageVersion=${{ steps.version.outputs.VERSION }} -p:PackageIcon= -o nupkg
 
       - name: Publish to NuGet
-        run: dotnet nuget push (Get-ChildItem nupkg/*.nupkg).FullName --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push (Get-ChildItem nupkg/*.nupkg).FullName --source https://api.nuget.org/v3/index.json --api-key $env:NUGET_API_KEY --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
       - name: Update winget manifests
         run: |
