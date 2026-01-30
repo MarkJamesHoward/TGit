@@ -1,7 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import fs from 'node:fs';
 
-const currentVersion = "1.3.1";
+const csproj = fs.readFileSync(new URL('../../../TGit.csproj', import.meta.url), 'utf-8');
+const currentVersion = csproj.match(/<Version>(.*?)<\/Version>/)?.[1] ?? '0.0.0';
 ---
 
 <Layout title="TGit Documentation">
@@ -26,6 +28,7 @@ const currentVersion = "1.3.1";
       <aside class="sidebar">
         <nav class="sidebar-nav">
           <a href="#about" class="sidebar-link">About</a>
+          <a href="#how-it-works" class="sidebar-link">How It Works</a>
           <a href="#download" class="sidebar-link">Download</a>
           <a href="#windows-install" class="sidebar-link">Windows Install</a>
           <a href="#macos-install" class="sidebar-link">macOS Install</a>
@@ -43,9 +46,7 @@ const currentVersion = "1.3.1";
       <section class="section" id="about">
         <h2>What is TGit?</h2>
         <p>
-          TGit is a lightweight CLI wrapper for git that tracks file changes across your team. 
-          It transparently passes all commands to git while sending activity updates to a central dashboard,
-          giving you visibility into who's working on what files across all your repositories.
+          Ever started editing a file on your laptop, switched to your desktop, and modified the same file — only to discover a painful merge conflict later? TGit prevents this by showing you exactly which files are being worked on across all your machines in real time. Before you touch a file, a quick glance at the dashboard tells you if it's already checked out elsewhere, saving you from unnecessary conflicts and lost work.
         </p>
         <div class="demo-animation">
           <div class="demo-machines">
@@ -132,6 +133,19 @@ const currentVersion = "1.3.1";
             <p>Tenant-based isolation keeps your team's data separate</p>
           </div>
         </div>
+      </section>
+
+      <section class="section" id="how-it-works">
+        <h2>How TGit Works</h2>
+        <p>
+          TGit is a lightweight CLI wrapper for git that tracks file changes across your machines.
+          It transparently passes all commands to git while sending activity updates to a central dashboard,
+          giving you visibility into what files are being worked on across all your repositories.
+        </p>
+        <p>
+          To get started, simply install TGit and it will connect to <strong>tgit.app</strong> out of the box — no setup required.
+          Once you're happy with how it works, you can self-host the API and dashboard to keep your data fully private and under your control.
+        </p>
       </section>
 
       <section class="section" id="download">
@@ -711,11 +725,11 @@ npm run build</code></pre>
     color: var(--accent-green);
   }
 
-  .download-btn {
+  a.download-btn {
     display: inline-block;
     background: var(--accent-blue);
-    color: white;
-    text-decoration: none;
+    color: white !important;
+    text-decoration: none !important;
     padding: 0.5rem 1.5rem;
     border-radius: 6px;
     font-weight: 500;
