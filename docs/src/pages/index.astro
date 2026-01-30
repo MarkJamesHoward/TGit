@@ -59,22 +59,21 @@ const currentVersion = "1.3.1";
               <div class="demo-panel-body">
                 <div class="terminal-line line-1"><span class="prompt">$</span> tgit add .</div>
                 <div class="terminal-line line-2"><span class="prompt">$</span> tgit commit -m "Add login"</div>
-                <div class="terminal-line line-3 dim">[feature/auth a3f1d2] Add login</div>
               </div>
             </div>
 
-            <div class="demo-panel demo-terminal">
-              <div class="demo-panel-header">
-                <span class="demo-dot red"></span>
-                <span class="demo-dot yellow"></span>
-                <span class="demo-dot green"></span>
-                <span class="demo-panel-title">DESKTOP-BOB</span>
+            <div class="demo-panel demo-terminal win-terminal">
+              <div class="demo-panel-header win-header">
+                <span class="demo-panel-title">DESKTOP-JANE</span>
+                <div class="win-controls">
+                  <span class="win-btn">&#8211;</span>
+                  <span class="win-btn">&#9633;</span>
+                  <span class="win-btn win-close">&#10005;</span>
+                </div>
               </div>
               <div class="demo-panel-body">
-                <div class="terminal-line line-4"><span class="prompt">$</span> tgit add .</div>
-                <div class="terminal-line line-5"><span class="prompt">$</span> tgit add src/api.cs</div>
-                <div class="terminal-line line-6"><span class="prompt">$</span> tgit commit -m "Fix endpoint"</div>
-                <div class="terminal-line line-7">[main b7e4f1] Fix endpoint</div>
+                <div class="terminal-line line-4"><span class="prompt">PS C:\&gt;</span> tgit add .</div>
+                <div class="terminal-line line-5"><span class="prompt">PS C:\&gt;</span> tgit commit -m "Fix endpoint"</div>
               </div>
             </div>
           </div>
@@ -93,28 +92,24 @@ const currentVersion = "1.3.1";
               <span class="demo-dot green"></span>
               <span class="demo-panel-title">tgit.app</span>
             </div>
-            <div class="demo-panel-body">
-              <div class="dashboard-row row-1">
+            <div class="demo-panel-body dash-grid">
+              <div class="dash-card row-1">
+                <span class="dash-detail"><span class="dash-machine">LAPTOP-JANE</span></span>
                 <span class="dash-avatar">JD</span>
-                <div class="dash-info">
-                  <span class="dash-name">Jane Doe</span>
-                  <span class="dash-detail"><span class="dash-branch">feature/auth</span> <span class="dash-machine">LAPTOP-JANE</span></span>
+                <span class="dash-name">Jane Doe</span>
+                <span class="dash-detail"><span class="dash-branch">main</span></span>
+                <div class="dash-files files-1">
+                  <div class="dash-file"><span class="staged-badge">staged</span> src/api.cs</div>
                 </div>
-                <span class="dash-time">just now</span>
               </div>
-              <div class="dash-files files-1">
-                <div class="dash-file"><span class="file-status modified">M</span> src/auth.cs</div>
-              </div>
-              <div class="dashboard-row row-2">
-                <span class="dash-avatar dash-avatar-2">BJ</span>
-                <div class="dash-info">
-                  <span class="dash-name">Bob Jones</span>
-                  <span class="dash-detail"><span class="dash-branch">main</span> <span class="dash-machine">DESKTOP-BOB</span></span>
+              <div class="dash-card row-2">
+                <span class="dash-detail"><span class="dash-machine">DESKTOP-JANE</span></span>
+                <span class="dash-avatar dash-avatar-2">JD</span>
+                <span class="dash-name">Jane Doe</span>
+                <span class="dash-detail"><span class="dash-branch">main</span></span>
+                <div class="dash-files files-2">
+                  <div class="dash-file"><span class="staged-badge">staged</span> src/api.cs</div>
                 </div>
-                <span class="dash-time">just now</span>
-              </div>
-              <div class="dash-files files-2">
-                <div class="dash-file"><span class="file-status modified">M</span> src/api.cs</div>
               </div>
             </div>
           </div>
@@ -913,6 +908,34 @@ npm run build</code></pre>
     color: var(--text-secondary);
   }
 
+  /* Windows terminal style */
+  .win-header {
+    justify-content: space-between;
+  }
+  .win-header .demo-panel-title {
+    margin-left: 0;
+  }
+  .win-controls {
+    display: flex;
+    gap: 0;
+  }
+  .win-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 20px;
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+  }
+  .win-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .win-close:hover {
+    background: #e81123;
+    color: #fff;
+  }
+
   .demo-machines {
     display: flex;
     flex-direction: column;
@@ -965,53 +988,63 @@ npm run build</code></pre>
   }
 
   /* Dashboard panel */
-  .dashboard-row {
+  .dash-grid {
     display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .dash-card {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.4rem 0;
-    border-bottom: 1px solid var(--border-color);
+    gap: 0.25rem;
+    padding: 0.4rem;
+    font-size: 0.8em;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    aspect-ratio: 1;
+    justify-content: center;
     opacity: 0;
     transition: opacity 0.4s, transform 0.4s, background 0.4s;
     transform: translateY(4px);
   }
-  .dashboard-row.visible {
+  .dash-card.visible {
     opacity: 1;
     transform: translateY(0);
   }
-  .dashboard-row.highlight {
+  .dash-card.highlight {
     background: rgba(88, 166, 255, 0.1);
+  }
+  .dash-card.removed {
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.5s, transform 0.5s;
   }
 
   .dash-files {
-    padding: 0.25rem 0 0.4rem 2.5rem;
-    border-bottom: 1px solid var(--border-color);
-    opacity: 0;
-    transition: opacity 0.4s, transform 0.4s;
-    transform: translateY(4px);
-  }
-  .dash-files.visible {
-    opacity: 1;
-    transform: translateY(0);
+    margin-top: 0.2rem;
   }
 
   .dash-file {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-secondary);
   }
 
-  .file-status {
-    display: inline-block;
-    width: 1.2rem;
-    text-align: center;
-    font-weight: bold;
-    font-size: 0.7rem;
+  .staged-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    background: rgba(88, 166, 255, 0.2);
+    color: var(--accent-blue);
+    border-radius: 4px;
+    font-family: inherit;
   }
-  .file-status.modified { color: var(--accent-yellow); }
 
   .dash-avatar {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     background: var(--accent-blue);
     color: white;
@@ -1034,18 +1067,22 @@ npm run build</code></pre>
   .dash-name {
     font-size: 0.8rem;
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    text-align: center;
+  }
+
+  .dash-detail {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
   }
 
   .dash-branch {
-    font-size: 0.7rem;
     color: var(--accent-blue);
   }
 
-  .dash-time {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    flex-shrink: 0;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  .dash-machine {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.8rem;
   }
 
   @media (max-width: 768px) {
@@ -1084,25 +1121,39 @@ npm run build</code></pre>
 <script>
   function runDemoAnimation() {
     const elements = [
-      { sel: '.demo-arrow', delay: 1500 },
       { sel: '.line-1', delay: 1000 },
+      { sel: '.demo-arrow', delay: 2000, flash: 2000 },
       { sel: '.row-1', delay: 2500 },
-      { sel: '.line-2', delay: 4000 },
-      { sel: '.line-3', delay: 5500 },
-      { sel: '.files-1', delay: 6500, highlight: '.row-1' },
-      { sel: '.line-4', delay: 8500 },
+      { sel: '.line-4', delay: 6000 },
+      { sel: '.demo-arrow', delay: 7000, flash: 2000 },
+      { sel: '.row-2', delay: 7500 },
+      { sel: '.line-2', delay: 14000 },
+      { sel: '.demo-arrow', delay: 15000, flash: 2000 },
+      { sel: '.row-1', delay: 16000, remove: true },
+      { sel: '.line-5', delay: 18000 },
+      { sel: '.demo-arrow', delay: 19000, flash: 2000 },
+      { sel: '.row-2', delay: 20000, remove: true },
     ];
 
     // Reset all
-    document.querySelectorAll('.terminal-line, .dashboard-row, .dash-files, .demo-arrow').forEach(el => {
-      el.classList.remove('visible', 'highlight');
+    document.querySelectorAll('.terminal-line, .dash-card, .demo-arrow').forEach(el => {
+      el.classList.remove('visible', 'highlight', 'removed');
     });
 
     // Schedule each element
-    elements.forEach(({ sel, delay, highlight }) => {
+    elements.forEach(({ sel, delay, highlight, remove, flash }) => {
       setTimeout(() => {
         const el = document.querySelector(sel);
-        if (el) el.classList.add('visible');
+        if (remove) {
+          if (el) el.classList.add('removed');
+        } else if (flash) {
+          if (el) {
+            el.classList.add('visible');
+            setTimeout(() => el.classList.remove('visible'), flash);
+          }
+        } else {
+          if (el) el.classList.add('visible');
+        }
         if (highlight) {
           const h = document.querySelector(highlight);
           if (h) {
@@ -1113,8 +1164,8 @@ npm run build</code></pre>
       }, delay);
     });
 
-    // Restart after full cycle (11s visible + 3s pause)
-    setTimeout(runDemoAnimation, 14000);
+    // Restart after full cycle
+    setTimeout(runDemoAnimation, 24000);
   }
 
   runDemoAnimation();
