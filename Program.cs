@@ -486,19 +486,51 @@ partial class Program
 
     private static string GenerateUniqueTenantId()
     {
-        // Generate a unique tenant ID based on machine name and a random suffix
+        // Try to use the git user email as a default tenant
+        var email = GetGitEmailSync();
+        if (!string.IsNullOrEmpty(email))
+        {
+            var sanitized = new string(
+                email.ToLowerInvariant().Where(c => char.IsLetterOrDigit(c) || c == '-' || c == '.' || c == '@').ToArray()
+            );
+            if (!string.IsNullOrEmpty(sanitized))
+                return sanitized;
+        }
+
+        // Fall back to machine name with random suffix
         var machinePart = Environment.MachineName.ToLowerInvariant();
-        // Sanitize machine name to only allow alphanumeric and hyphens
         machinePart = new string(
             machinePart.Where(c => char.IsLetterOrDigit(c) || c == '-').ToArray()
         );
         if (machinePart.Length > 12)
             machinePart = machinePart[..12];
 
-        // Add random suffix for uniqueness
         var randomSuffix = Guid.NewGuid().ToString("N")[..6];
-
         return $"{machinePart}-{randomSuffix}";
+    }
+
+    private static string? GetGitEmailSync()
+    {
+        try
+        {
+            var gitPath = FindGitExecutable();
+            if (gitPath == null) return null;
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = gitPath,
+                Arguments = "config user.email",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true,
+            };
+            var process = Process.Start(startInfo);
+            if (process == null) return null;
+            var output = process.StandardOutput.ReadToEnd().Trim();
+            process.WaitForExit(5000);
+            return string.IsNullOrEmpty(output) ? null : output;
+        }
+        catch { return null; }
     }
 
     private static void SaveConfig(TGitConfig config)
