@@ -204,7 +204,7 @@ const currentVersion = "1.3.1";
             <div class="step-content">
               <h4>Set Your Team Tenant</h4>
               <p>Share the same tenant ID across your team to see each other's activity:</p>
-              <pre><code>tgit config tenant mycompany</code></pre>
+              <pre><code>tgit --config tenant mycompany</code></pre>
             </div>
           </div>
         </div>
@@ -242,7 +242,7 @@ source ~/.zshrc</code></pre>
             <div class="step-number">4</div>
             <div class="step-content">
               <h4>Set Your Team Tenant</h4>
-              <pre><code>tgit config tenant mycompany</code></pre>
+              <pre><code>tgit --config tenant mycompany</code></pre>
             </div>
           </div>
         </div>
@@ -282,7 +282,7 @@ source ~/.bashrc</code></pre>
             <div class="step-number">4</div>
             <div class="step-content">
               <h4>Set Your Team Tenant</h4>
-              <pre><code>tgit config tenant mycompany</code></pre>
+              <pre><code>tgit --config tenant mycompany</code></pre>
             </div>
           </div>
         </div>
@@ -333,11 +333,11 @@ tgit [any git command]</code></pre>
           <div class="usage-examples" style="margin-top: 1rem;">
             <div class="example">
               <pre><code># Show current configuration
-tgit config
+tgit --config
 
 # Show or set your tenant ID
-tgit config tenant
-tgit config tenant mycompany
+tgit --config tenant
+tgit --config tenant mycompany
 
 # Delete all tracking data for your tenant
 tgit --clear
@@ -383,7 +383,7 @@ tgit --help</code></pre>
             <div class="step-content">
               <h4>Set a Shared Tenant</h4>
               <p>Everyone on your team should use the same tenant ID:</p>
-              <pre><code>tgit config tenant mycompany</code></pre>
+              <pre><code>tgit --config tenant mycompany</code></pre>
             </div>
           </div>
           <div class="step">
@@ -438,7 +438,7 @@ tgit --help</code></pre>
           </tbody>
         </table>
 
-        <p style="margin-top: 1rem;">Configuration is stored in <code>~/.tgit/config.json</code>. Use <code>tgit config</code> to view or modify settings.</p>
+        <p style="margin-top: 1rem;">Configuration is stored in <code>~/.tgit/config.json</code>. Use <code>tgit --config</code> to view or modify settings.</p>
       </section>
 
       <section class="section" id="dashboard">

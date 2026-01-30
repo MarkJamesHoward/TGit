@@ -1,18 +1,20 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || '';
+const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app';
 ---
 
 <Layout title="TGit Dashboard">
   <div class="container">
     <header>
-      <div class="logo">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <path d="M16 2L4 8v16l12 6 12-6V8L16 2z" stroke="currentColor" stroke-width="2" fill="none"/>
-          <path d="M16 8v16M8 12l8 4 8-4" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        <h1>TGit Dashboard</h1>
+      <div class="header-top">
+        <div class="logo">
+          <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+            <path d="M16 2L4 8v16l12 6 12-6V8L16 2z" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M16 8v16M8 12l8 4 8-4" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <h1>TGit Dashboard</h1>
+        </div>
       </div>
       <div class="stats-header">
         <div class="stat-pill active">
@@ -33,13 +35,16 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || '';
 
     <div class="filters">
       <div class="tenant-input-group">
-        <input
-          type="text"
-          id="tenant-input"
-          placeholder="Enter tenant ID..."
-          class="search-input tenant-input"
-        />
-        <button id="tenant-btn" class="tenant-btn" title="Load Tenant">Go</button>
+        <label for="tenant-input" class="tenant-label">Set your tenant to view team activity</label>
+        <div class="tenant-input-row">
+          <input
+            type="text"
+            id="tenant-input"
+            placeholder="Enter tenant ID..."
+            class="search-input tenant-input"
+          />
+          <button id="tenant-btn" class="tenant-btn" title="Load Tenant">Go</button>
+        </div>
       </div>
     </div>
 
@@ -168,11 +173,8 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || '';
     const grid = document.getElementById('users-grid')!;
     const activeCountEl = document.getElementById('active-count')!;
     const totalCountEl = document.getElementById('total-count')!;
-    const tenantInput = document.getElementById('tenant-input') as HTMLInputElement;
-
     const params = new URLSearchParams(window.location.search);
     const tenant = params.get('tenant') || 'default';
-    tenantInput.value = tenant;
 
     try {
       const url = `${API_BASE_URL}/api/users?tenant=${encodeURIComponent(tenant)}`;
@@ -224,6 +226,10 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || '';
   // Tenant navigation
   const tenantInput = document.getElementById('tenant-input') as HTMLInputElement;
   const tenantBtn = document.getElementById('tenant-btn');
+  const urlTenant = new URLSearchParams(window.location.search).get('tenant');
+  if (tenantInput && urlTenant && urlTenant !== 'default') {
+    tenantInput.value = urlTenant;
+  }
 
   function goToTenant() {
     const tenant = tenantInput?.value.trim().toLowerCase() || 'default';
@@ -263,11 +269,16 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || '';
 
   header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
     margin-bottom: 24px;
-    flex-wrap: wrap;
     gap: 16px;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .logo {
@@ -281,13 +292,14 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || '';
   }
 
   .logo h1 {
-    font-size: 24px;
-    font-weight: 600;
+    font-size: 28px;
+    font-weight: 700;
   }
 
   .stats-header {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
   }
 
@@ -342,6 +354,17 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || '';
   }
 
   .tenant-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .tenant-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .tenant-input-row {
     display: flex;
     gap: 4px;
   }

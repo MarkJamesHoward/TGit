@@ -74,9 +74,9 @@ tgit push
 ### TGit Commands
 
 ```
-tgit config                    Show current configuration
-tgit config tenant             Show current tenant ID
-tgit config tenant <name>      Set tenant ID for data isolation
+tgit --config                    Show current configuration
+tgit --config tenant             Show current tenant ID
+tgit --config tenant <name>      Set tenant ID for data isolation
 tgit --clear                   Delete all tracking data for your tenant
 tgit --help                    Show help message
 tgit --version                 Show version information
@@ -88,10 +88,10 @@ Each TGit installation gets a unique tenant ID on first run. All users sharing t
 
 ```bash
 # Set a shared tenant for your team
-tgit config tenant mycompany
+tgit --config tenant mycompany
 
 # View your current tenant
-tgit config tenant
+tgit --config tenant
 ```
 
 ### Clearing Data

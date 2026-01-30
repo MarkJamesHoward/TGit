@@ -47,8 +47,8 @@ partial class Program
             return await HandleClearCommand();
         }
 
-        // Handle tgit config commands
-        if (args.Length >= 1 && args[0].Equals("config", StringComparison.OrdinalIgnoreCase))
+        // Handle tgit --config commands
+        if (args.Length >= 1 && args[0].Equals("--config", StringComparison.OrdinalIgnoreCase))
         {
             return HandleConfigCommand(args.Skip(1).ToArray());
         }
@@ -455,10 +455,10 @@ partial class Program
             return 0;
         }
 
-        Console.WriteLine("Usage: tgit config tenant [company-name]");
-        Console.WriteLine("  tgit config              - Show all config");
-        Console.WriteLine("  tgit config tenant       - Show current tenant");
-        Console.WriteLine("  tgit config tenant acme  - Set tenant to 'acme'");
+        Console.WriteLine("Usage: tgit --config tenant [company-name]");
+        Console.WriteLine("  tgit --config              - Show all config");
+        Console.WriteLine("  tgit --config tenant       - Show current tenant");
+        Console.WriteLine("  tgit --config tenant acme  - Set tenant to 'acme'");
         return 1;
     }
 
@@ -562,9 +562,9 @@ Version: {version}
 Tenant:  {config.Tenant}
 
 TGIT COMMANDS:
-  tgit config                    Show current configuration
-  tgit config tenant             Show current tenant ID
-  tgit config tenant <name>      Set tenant ID for data isolation
+  tgit --config                  Show current configuration
+  tgit --config tenant           Show current tenant ID
+  tgit --config tenant <name>    Set tenant ID for data isolation
 
   tgit --clear                   Delete all tracking data for your tenant
   tgit --help, -h, help          Show this help message
