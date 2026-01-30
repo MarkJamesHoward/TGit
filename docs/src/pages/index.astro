@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const currentVersion = "1.0.6";
+const currentVersion = "1.3.1";
 ---
 
 <Layout title="TGit Documentation">
@@ -15,8 +15,10 @@ const currentVersion = "1.0.6";
           <a href="#macos-install" class="sidebar-link">macOS Install</a>
           <a href="#linux-install" class="sidebar-link">Linux Install</a>
           <a href="#usage" class="sidebar-link">Usage</a>
+          <a href="#tenants" class="sidebar-link">Tenants</a>
           <a href="#configuration" class="sidebar-link">Configuration</a>
-          <a href="#self-hosting" class="sidebar-link">Self Hosting</a>
+          <a href="#dashboard" class="sidebar-link">Dashboard</a>
+          <a href="#api" class="sidebar-link">API Endpoints</a>
         </nav>
       </aside>
 
@@ -55,9 +57,9 @@ const currentVersion = "1.0.6";
             <p>Works exactly like git - just use tgit instead</p>
           </div>
           <div class="feature">
-            <div class="feature-icon">🌍</div>
-            <h3>Cross-platform</h3>
-            <p>Works on Windows, macOS, and Linux</p>
+            <div class="feature-icon">🏢</div>
+            <h3>Team Isolation</h3>
+            <p>Tenant-based isolation keeps your team's data separate</p>
           </div>
         </div>
       </section>
@@ -130,10 +132,9 @@ const currentVersion = "1.0.6";
           <div class="step">
             <div class="step-number">3</div>
             <div class="step-content">
-              <h4>Configure (Optional)</h4>
-              <p>Set your dashboard URL:</p>
-              <pre><code>set TGIT_API_URL=https://your-dashboard.com/api/git-activity</code></pre>
-              <p>Add to your system environment variables for persistence.</p>
+              <h4>Set Your Team Tenant</h4>
+              <p>Share the same tenant ID across your team to see each other's activity:</p>
+              <pre><code>tgit config tenant mycompany</code></pre>
             </div>
           </div>
         </div>
@@ -170,8 +171,8 @@ source ~/.zshrc</code></pre>
           <div class="step">
             <div class="step-number">4</div>
             <div class="step-content">
-              <h4>Configure (Optional)</h4>
-              <pre><code>export TGIT_API_URL=https://your-dashboard.com/api/git-activity</code></pre>
+              <h4>Set Your Team Tenant</h4>
+              <pre><code>tgit config tenant mycompany</code></pre>
             </div>
           </div>
         </div>
@@ -210,8 +211,8 @@ source ~/.bashrc</code></pre>
           <div class="step">
             <div class="step-number">4</div>
             <div class="step-content">
-              <h4>Configure (Optional)</h4>
-              <pre><code>export TGIT_API_URL=https://your-dashboard.com/api/git-activity</code></pre>
+              <h4>Set Your Team Tenant</h4>
+              <pre><code>tgit config tenant mycompany</code></pre>
             </div>
           </div>
         </div>
@@ -257,8 +258,29 @@ tgit [any git command]</code></pre>
         </div>
 
         <div class="tracked-commands">
-          <h4>Tracked Commands</h4>
-          <p>The following commands trigger activity updates to the dashboard:</p>
+          <h4>TGit Commands</h4>
+          <p>These commands are handled by TGit directly (not passed to git):</p>
+          <div class="usage-examples" style="margin-top: 1rem;">
+            <div class="example">
+              <pre><code># Show current configuration
+tgit config
+
+# Show or set your tenant ID
+tgit config tenant
+tgit config tenant mycompany
+
+# Delete all tracking data for your tenant
+tgit --clear
+
+# Show help
+tgit --help</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="tracked-commands" style="margin-top: 1.5rem;">
+          <h4>Tracked Git Commands</h4>
+          <p>The following git commands trigger activity updates to the dashboard:</p>
           <div class="command-tags">
             <span class="tag">status</span>
             <span class="tag">add</span>
@@ -272,14 +294,53 @@ tgit [any git command]</code></pre>
             <span class="tag">rebase</span>
             <span class="tag">cherry-pick</span>
             <span class="tag">revert</span>
+            <span class="tag">pull</span>
+            <span class="tag">push</span>
+            <span class="tag">fetch</span>
+            <span class="tag">clone</span>
+          </div>
+          <p style="margin-top: 1rem;">All other git commands pass through transparently without tracking.</p>
+        </div>
+      </section>
+
+      <section class="section" id="tenants">
+        <h2>Tenants</h2>
+        <p>TGit uses tenant-based isolation so different teams can track activity independently. Each TGit installation generates a unique tenant ID on first run.</p>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Set a Shared Tenant</h4>
+              <p>Everyone on your team should use the same tenant ID:</p>
+              <pre><code>tgit config tenant mycompany</code></pre>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>View the Dashboard</h4>
+              <p>Go to <a href="https://tgit.app" target="_blank">tgit.app</a> and enter your tenant ID to see your team's activity.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Clear Data</h4>
+              <p>To delete all tracking data for your tenant:</p>
+              <pre><code>tgit --clear</code></pre>
+            </div>
           </div>
         </div>
+
+        <p>You can also override the tenant via environment variable:</p>
+        <pre><code>export TGIT_TENANT=mycompany</code></pre>
       </section>
 
       <section class="section" id="configuration">
         <h2>Configuration</h2>
-        <p>TGit can be configured using environment variables:</p>
-        
+        <p>TGit can be configured using environment variables or the built-in config command:</p>
+
         <table class="config-table">
           <thead>
             <tr>
@@ -291,49 +352,92 @@ tgit [any git command]</code></pre>
           <tbody>
             <tr>
               <td><code>TGIT_API_URL</code></td>
-              <td>The URL of your TGit dashboard API endpoint</td>
-              <td><code>http://localhost:4321/api/git-activity</code></td>
+              <td>API endpoint for tracking data</td>
+              <td><code>https://api.tgit.app/api/GitActivity</code></td>
+            </tr>
+            <tr>
+              <td><code>TGIT_TENANT</code></td>
+              <td>Override tenant ID (takes precedence over config file)</td>
+              <td>Auto-generated</td>
+            </tr>
+            <tr>
+              <td><code>TGIT_DEBUG</code></td>
+              <td>Set to <code>1</code> to enable debug output</td>
+              <td>Not set</td>
             </tr>
           </tbody>
         </table>
+
+        <p style="margin-top: 1rem;">Configuration is stored in <code>~/.tgit/config.json</code>. Use <code>tgit config</code> to view or modify settings.</p>
       </section>
 
-      <section class="section" id="self-hosting">
-        <h2>Self-Hosting the Dashboard</h2>
-        <p>The TGit dashboard is built with Astro and can be self-hosted:</p>
-        
+      <section class="section" id="dashboard">
+        <h2>Dashboard</h2>
+        <p>The hosted dashboard is available at <a href="https://tgit.app" target="_blank">tgit.app</a>. Enter your tenant ID to view your team's real-time activity.</p>
+        <p>The dashboard polls the API every 2 seconds and shows:</p>
+        <ul style="color: var(--text-secondary); margin-bottom: 1rem; padding-left: 1.5rem;">
+          <li>Active users and their current branches</li>
+          <li>Modified files per repository</li>
+          <li>Time since last activity</li>
+        </ul>
+        <p>To self-host the dashboard:</p>
         <div class="steps">
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-content">
-              <h4>Clone the Repository</h4>
-              <pre><code>git clone https://github.com/your-org/tgit.git
-cd tgit/web</code></pre>
+              <h4>Clone and Build</h4>
+              <pre><code>git clone https://github.com/MarkJamesHoward/TGit.git
+cd TGit/dashboard
+npm install
+npm run build</code></pre>
             </div>
           </div>
           <div class="step">
             <div class="step-number">2</div>
             <div class="step-content">
-              <h4>Install Dependencies</h4>
-              <pre><code>npm install</code></pre>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h4>Run Development Server</h4>
-              <pre><code>npm run dev</code></pre>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-number">4</div>
-            <div class="step-content">
-              <h4>Build for Production</h4>
-              <pre><code>npm run build
-npm run preview</code></pre>
+              <h4>Set the API URL</h4>
+              <p>Set the <code>PUBLIC_API_BASE_URL</code> environment variable at build time:</p>
+              <pre><code>PUBLIC_API_BASE_URL=https://api.tgit.app npm run build</code></pre>
             </div>
           </div>
         </div>
+      </section>
+
+      <section class="section" id="api">
+        <h2>API Endpoints</h2>
+        <p>The TGit API is an ASP.NET Core Web API. Swagger documentation is available at <a href="https://api.tgit.app/swagger" target="_blank">api.tgit.app/swagger</a>.</p>
+
+        <table class="config-table">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Endpoint</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>POST</code></td>
+              <td><code>/api/GitActivity</code></td>
+              <td>Record git activity</td>
+            </tr>
+            <tr>
+              <td><code>DELETE</code></td>
+              <td><code>/api/GitActivity?tenant=xxx</code></td>
+              <td>Delete all data for a tenant</td>
+            </tr>
+            <tr>
+              <td><code>GET</code></td>
+              <td><code>/api/Users?tenant=xxx</code></td>
+              <td>Get all users for a tenant</td>
+            </tr>
+            <tr>
+              <td><code>GET</code></td>
+              <td><code>/api/Users?tenant=xxx&active=true</code></td>
+              <td>Get active users only</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
     </main>
       </div>

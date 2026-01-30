@@ -1,29 +1,46 @@
 # TGit - Git Wrapper with Activity Tracking
 
-TGit is a CLI application that wraps Git commands, passing them through to Git while also sending activity tracking information to a configurable API endpoint. It includes a web dashboard to visualize team activity.
+TGit is a CLI tool that wraps Git commands, passing them through to Git while sending activity tracking data to an API. It includes a real-time web dashboard to visualize team activity, with tenant isolation for multi-team support.
 
 ## Project Structure
 
 ```
 TGit/
-├── Program.cs          # CLI wrapper application
-├── TGit.csproj         # .NET project file
-├── web/                # Astro.js web dashboard
-│   ├── src/
-│   │   ├── pages/      # Dashboard and API endpoints
-│   │   ├── components/ # UI components
-│   │   └── lib/        # Data store
+├── Program.cs              # CLI wrapper application
+├── TGit.csproj             # .NET project file (CLI)
+├── api/                    # ASP.NET Core Web API
+│   ├── Controllers/        # API endpoints
+│   ├── Services/           # Storage services (JSON, Cosmos DB)
+│   ├── Models/             # Data models
+│   └── TGitApi.csproj
+├── dashboard/              # Astro.js static web dashboard
+│   ├── src/pages/          # Dashboard UI
 │   └── package.json
-└── README.md
+├── winget/                 # Winget package manifests
+└── .github/workflows/     # CI/CD
+    ├── release.yml         # CLI release (tag-triggered)
+    ├── azure-api-deploy.yml    # API deploy to Azure App Service
+    └── dashboard.yml       # Dashboard deploy to Azure Static Web App
 ```
 
-## Features
+## Architecture
 
-- **Full Git Passthrough**: All Git commands work exactly as expected
-- **Activity Tracking**: Sends information about file changes to your tracking API
-- **Non-blocking**: API calls are async and won't slow down your workflow
-- **Configurable**: Set your API endpoint via environment variable
-- **Web Dashboard**: Visualize up to 100+ users and their git activity in real-time
+```
+┌─────────┐     POST /api/GitActivity     ┌─────────────┐
+│  tgit   │ ──────────────────────────────>│   API       │
+│  CLI    │                                │  (Azure     │
+└─────────┘                                │  App Svc)   │
+                                           └──────┬──────┘
+┌─────────────┐  GET /api/Users                   │
+│  Dashboard  │ <─────────────────────────────────┘
+│  (Azure     │   (polls every 2 seconds)
+│  Static App)│
+└─────────────┘
+```
+
+- **CLI** (`tgit`) — wraps git commands, sends activity data to the API
+- **API** (`api.tgit.app`) — ASP.NET Core API, stores data in JSON files or Cosmos DB
+- **Dashboard** (`tgit.app`) — Astro static site, polls the API and displays team activity
 
 ## Installation
 
@@ -38,46 +55,9 @@ winget install MarkJamesHoward.TGit
 #### Or build and install manually
 
 ```bash
-# Build and install as global tool
 cd TGit
 dotnet pack -c Release
-dotnet tool install --global --add-source ./bin/Release TGit
-```
-
-### Web Dashboard
-
-```bash
-cd web
-npm install
-npm run dev      # Development server on http://localhost:4321
-npm run build    # Production build
-node dist/server/entry.mjs  # Run production server
-```
-
-## Configuration
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `TGIT_API_URL` | The API endpoint to send tracking data | `http://localhost:4321/api/git-activity` |
-| `TGIT_DEBUG` | Set to `1` to enable debug output | Not set |
-
-### Setting the API Endpoint
-
-**Windows (PowerShell):**
-```powershell
-$env:TGIT_API_URL = "https://your-server.com/api/git-activity"
-```
-
-**Windows (Command Prompt):**
-```cmd
-set TGIT_API_URL=https://your-server.com/api/git-activity
-```
-
-**Linux/macOS:**
-```bash
-export TGIT_API_URL="https://your-server.com/api/git-activity"
+dotnet tool install --global --add-source ./nupkg TGit
 ```
 
 ## Usage
@@ -91,20 +71,76 @@ tgit commit -m "Your message"
 tgit push
 ```
 
-## Tracked Commands
+### TGit Commands
 
-The following commands trigger API notifications:
-- `add`, `commit`, `checkout`, `switch`, `restore`, `reset`
-- `merge`, `rebase`, `cherry-pick`, `revert`, `stash`
-- `pull`, `push`, `fetch`, `clone`
+```
+tgit config                    Show current configuration
+tgit config tenant             Show current tenant ID
+tgit config tenant <name>      Set tenant ID for data isolation
+tgit --clear                   Delete all tracking data for your tenant
+tgit --help                    Show help message
+tgit --version                 Show version information
+```
 
-## API Payload
+### Tenant Configuration
 
-The tracking API receives a JSON payload with the following structure:
+Each TGit installation gets a unique tenant ID on first run. All users sharing the same tenant ID can see each other's activity on the dashboard.
+
+```bash
+# Set a shared tenant for your team
+tgit config tenant mycompany
+
+# View your current tenant
+tgit config tenant
+```
+
+### Clearing Data
+
+To delete all tracked data for your tenant:
+
+```bash
+tgit --clear
+```
+
+### Tracked Commands
+
+The following git commands trigger activity tracking:
+`status`, `add`, `commit`, `checkout`, `switch`, `restore`, `reset`, `merge`, `rebase`, `cherry-pick`, `revert`, `stash`, `pull`, `push`, `fetch`, `clone`
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `TGIT_API_URL` | API endpoint for tracking data | `https://api.tgit.app/api/GitActivity` |
+| `TGIT_TENANT` | Override tenant ID (takes precedence over config) | Auto-generated |
+| `TGIT_DEBUG` | Set to `1` to enable debug output | Not set |
+
+## Dashboard
+
+View your team's activity at [tgit.app](https://tgit.app). Enter your tenant ID to see activity for your team.
+
+The dashboard polls the API every 2 seconds and shows:
+- Active users and their current branches
+- Modified files per repository
+- Time since last activity
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/GitActivity` | Record git activity |
+| `DELETE` | `/api/GitActivity?tenant=xxx` | Delete all data for a tenant |
+| `GET` | `/api/Users?tenant=xxx` | Get all users for a tenant |
+| `GET` | `/api/Users?tenant=xxx&active=true` | Get active users only |
+| `GET` | `/swagger` | Swagger UI |
+
+### Activity Payload
 
 ```json
 {
-  "timestamp": "2026-01-18T12:00:00Z",
+  "timestamp": "2026-01-30T12:00:00Z",
   "userName": "John Doe",
   "userEmail": "john@example.com",
   "repoName": "my-project",
@@ -117,49 +153,42 @@ The tracking API receives a JSON payload with the following structure:
       "isStaged": true
     }
   ],
-  "machineName": "DESKTOP-ABC123"
+  "machineName": "DESKTOP-ABC123",
+  "tenant": "mycompany"
 }
 ```
 
-### File Status Values
+## Deployment
 
-- `Added` - New file added to the repository
-- `Modified` - Existing file was modified
-- `Deleted` - File was deleted
-- `Renamed` - File was renamed
-- `Copied` - File was copied
-- `Unmerged` - File has merge conflicts
-- `Untracked` - New file not yet tracked by Git
+### API (Azure App Service)
 
-## Example API Server
+Deployed automatically via GitHub Actions when files in `api/` change on `main`.
 
-Here's a minimal example of an API server to receive the tracking data:
+**App Settings:**
+| Setting | Description |
+|---------|-------------|
+| `Storage__Type` | `json` (default) or `cosmos` |
+| `Storage__DataDir` | Path for JSON storage (use `/home/data` for persistence on Azure) |
+| `Cosmos__Endpoint` | Cosmos DB endpoint (when using Cosmos storage) |
+| `Cosmos__Key` | Cosmos DB key (when using Cosmos storage) |
 
-### Node.js (Express)
+### Dashboard (Azure Static Web App)
 
-```javascript
-const express = require('express');
-const app = express();
-app.use(express.json());
+Deployed automatically via GitHub Actions when files in `dashboard/` change on `main`.
 
-app.post('/api/git-activity', (req, res) => {
-  console.log('Git activity received:', req.body);
-  // Store in database, send notifications, etc.
-  res.status(200).json({ success: true });
-});
+**Build-time environment variable:**
+- `PUBLIC_API_BASE_URL` — the API base URL (e.g., `https://api.tgit.app`)
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+### CLI Release
+
+Tag a version to trigger a release:
+
+```bash
+git tag v1.4.0
+git push origin v1.4.0
 ```
 
-### ASP.NET Core
-
-```csharp
-app.MapPost("/api/git-activity", (GitTrackingInfo info) =>
-{
-    // Process the tracking info
-    return Results.Ok(new { success = true });
-});
-```
+This builds win-x64 and win-arm64 binaries, creates a GitHub release, and submits to winget.
 
 ## License
 
