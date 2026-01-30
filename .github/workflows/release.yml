@@ -122,8 +122,14 @@ jobs:
       - name: Pack NuGet package
         run: dotnet pack TGit.csproj -c Release -p:PackageVersion=${{ steps.version.outputs.VERSION }} -p:PackageIcon= -o nupkg
 
+      - name: NuGet trusted publishing login
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: MarkJamesHoward
+
       - name: Publish to NuGet
-        run: dotnet nuget push (Get-ChildItem nupkg/*.nupkg).FullName --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push (Get-ChildItem nupkg/*.nupkg).FullName --source https://api.nuget.org/v3/index.json --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --skip-duplicate
 
       - name: Update winget manifests
         run: |
