@@ -9,8 +9,7 @@ partial class Program
     // Default points to Azure production
     private static readonly string ApiEndpoint =
         Environment.GetEnvironmentVariable("TGIT_API_URL")
-        // ?? "https://tgit-cjcgafe3fbbgb3d3.newzealandnorth-01.azurewebsites.net/api/git-activity";
-        ?? "https://tgit.app/api/git-activity";
+        ?? "https://api.tgit.app/api/git-activity";
 
     private static readonly HttpClient HttpClient = new();
 
