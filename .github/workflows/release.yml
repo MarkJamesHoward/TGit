@@ -32,10 +32,10 @@ jobs:
           Set-Content TGit.csproj $content
 
       - name: Build Windows x64
-        run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o publish/win-x64
+        run: dotnet publish TGit.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o publish/win-x64
 
       - name: Build Windows ARM64
-        run: dotnet publish -c Release -r win-arm64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o publish/win-arm64
+        run: dotnet publish TGit.csproj -c Release -r win-arm64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o publish/win-arm64
 
       - name: Create ZIP packages
         run: |
