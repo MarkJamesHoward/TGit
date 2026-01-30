@@ -33,7 +33,9 @@
       "Bash(dotnet pack:*)",
       "Bash(dotnet tool install:*)",
       "Bash($env:TGIT_DEBUG=\"1\")",
-      "Bash(d:devTGitbinDebugnet9.0tgit.exe status)"
+      "Bash(d:devTGitbinDebugnet9.0tgit.exe status)",
+      "Bash(dotnet tool update:*)",
+      "Bash(dotnet tool:*)"
     ]
   }
 }
