@@ -464,24 +464,45 @@ tgit --help</code></pre>
           <li>Modified files per repository</li>
           <li>Time since last activity</li>
         </ul>
-        <p>To self-host the dashboard:</p>
+        <h3>Self-hosting the API</h3>
+        <p>The API is where all activity data is stored. To keep your data fully private, self-host the API:</p>
         <div class="steps">
           <div class="step">
             <div class="step-number">1</div>
             <div class="step-content">
-              <h4>Clone and Build</h4>
+              <h4>Clone and Run the API</h4>
               <pre><code>git clone https://github.com/MarkJamesHoward/TGit.git
-cd TGit/dashboard
-npm install
-npm run build</code></pre>
+cd TGit/api
+dotnet run</code></pre>
             </div>
           </div>
           <div class="step">
             <div class="step-number">2</div>
             <div class="step-content">
-              <h4>Set the API URL</h4>
-              <p>Set the <code>PUBLIC_API_BASE_URL</code> environment variable at build time:</p>
-              <pre><code>PUBLIC_API_BASE_URL=https://api.tgit.app npm run build</code></pre>
+              <h4>Point TGit to your API</h4>
+              <p>Set the <code>TGIT_API_URL</code> environment variable on each machine:</p>
+              <pre><code>export TGIT_API_URL=https://your-api-server:5000</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <h3>Self-hosting the Dashboard</h3>
+        <p>The dashboard is a static site that connects to the API to display activity:</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Build the Dashboard</h4>
+              <pre><code>cd TGit/dashboard
+npm install
+PUBLIC_API_BASE_URL=https://your-api-server:5000 npm run build</code></pre>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Deploy</h4>
+              <p>The built output in <code>dist/</code> can be hosted on any static file server or CDN.</p>
             </div>
           </div>
         </div>
