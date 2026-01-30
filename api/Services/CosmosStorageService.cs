@@ -146,4 +146,14 @@ public class CosmosStorageService : IStorageService
         if (hours < 24) return $"{hours}h ago";
         return $"{days}d ago";
     }
+
+    public async Task DeleteTenantAsync(string tenant)
+    {
+        var users = await GetAllUsersAsync(tenant.ToLowerInvariant());
+        foreach (var user in users)
+        {
+            var partitionKey = new PartitionKey(user.UserEmail.ToLowerInvariant());
+            await _container.DeleteItemAsync<UserStatus>(user.Id, partitionKey);
+        }
+    }
 }

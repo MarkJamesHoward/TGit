@@ -9,4 +9,5 @@ public interface IStorageService
     Task<List<UserStatus>> GetActiveUsersAsync(string? tenant = null);
     bool IsUserActive(UserStatus user);
     string GetTimeSinceActivity(string timestamp);
+    Task DeleteTenantAsync(string tenant);
 }

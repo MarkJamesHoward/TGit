@@ -192,4 +192,14 @@ public class JsonStorageService : IStorageService
         if (hours < 24) return $"{hours}h ago";
         return $"{days}d ago";
     }
+
+    public Task DeleteTenantAsync(string tenant)
+    {
+        var filePath = GetUsersFilePath(tenant.ToLowerInvariant());
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+        return Task.CompletedTask;
+    }
 }

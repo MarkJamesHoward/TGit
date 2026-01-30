@@ -40,6 +40,26 @@ public class GitActivityController : ControllerBase
         }
     }
 
+    [HttpDelete]
+    public async Task<IActionResult> DeleteTenant([FromQuery] string tenant)
+    {
+        if (string.IsNullOrEmpty(tenant))
+        {
+            return BadRequest(new ApiErrorResponse { Error = "Tenant is required" });
+        }
+
+        try
+        {
+            await _storageService.DeleteTenantAsync(tenant);
+            return Ok(new ApiResponse { Success = true });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting tenant data");
+            return BadRequest(new ApiErrorResponse { Error = "Failed to delete tenant data" });
+        }
+    }
+
     [HttpOptions]
     public IActionResult Options()
     {

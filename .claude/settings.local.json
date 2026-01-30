@@ -16,7 +16,24 @@
       "Bash(gh secret list:*)",
       "Bash(gh secret get:*)",
       "Bash(az webapp update:*)",
-      "Bash(az resource update:*)"
+      "Bash(az resource update:*)",
+      "Bash(git -C \"d:\\\\dev\\\\TGit\" diff .github/workflows/azure-api-deploy.yml)",
+      "Bash(git -C \"d:\\\\dev\\\\TGit\" log --oneline -5)",
+      "Bash(az webapp deployment source delete:*)",
+      "Bash(git stash:*)",
+      "Bash(gh secret set:*)",
+      "Bash(gh run list:*)",
+      "Bash(az webapp log tail:*)",
+      "Bash(az webapp log download:*)",
+      "Bash(unzip:*)",
+      "Bash(az webapp config show:*)",
+      "Bash(az webapp config set:*)",
+      "Bash(git push:*)",
+      "Bash(git tag:*)",
+      "Bash(dotnet pack:*)",
+      "Bash(dotnet tool install:*)",
+      "Bash($env:TGIT_DEBUG=\"1\")",
+      "Bash(d:devTGitbinDebugnet9.0tgit.exe status)"
     ]
   }
 }

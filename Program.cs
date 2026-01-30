@@ -41,6 +41,12 @@ partial class Program
             return 0;
         }
 
+        // Handle tgit --clear
+        if (args.Length == 1 && args[0] == "--clear")
+        {
+            return await HandleClearCommand();
+        }
+
         // Handle tgit config commands
         if (args.Length >= 1 && args[0].Equals("config", StringComparison.OrdinalIgnoreCase))
         {
@@ -516,6 +522,34 @@ partial class Program
         return LoadConfig().Tenant;
     }
 
+    private static async Task<int> HandleClearCommand()
+    {
+        var tenant = GetTenant();
+        Console.WriteLine($"Deleting all data for tenant: {tenant}");
+
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var response = await HttpClient.DeleteAsync($"{ApiEndpoint}?tenant={tenant}", cts.Token);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Data deleted successfully.");
+                return 0;
+            }
+            else
+            {
+                Console.Error.WriteLine($"Failed to delete data. Status: {response.StatusCode}");
+                return 1;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            return 1;
+        }
+    }
+
     private static void PrintHelp()
     {
         var config = LoadConfig();
@@ -532,6 +566,7 @@ TGIT COMMANDS:
   tgit config tenant             Show current tenant ID
   tgit config tenant <name>      Set tenant ID for data isolation
 
+  tgit --clear                   Delete all tracking data for your tenant
   tgit --help, -h, help          Show this help message
   tgit --version, -v             Show version information
 
