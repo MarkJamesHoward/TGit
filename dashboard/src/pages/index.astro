@@ -16,26 +16,11 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
           <h1>TGit Dashboard</h1>
         </div>
       </div>
-      <div class="stats-header">
-        <div class="stat-pill active">
-          <span class="dot"></span>
-          <span id="active-count">0</span> active
-        </div>
-        <div class="stat-pill total">
-          <span id="total-count">0</span> total users
-        </div>
-        <button id="refresh-btn" class="refresh-btn" title="Refresh">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path fill-rule="evenodd" d="M8 3a5 5 0 104.546 2.914.5.5 0 01.908-.418A6 6 0 118 2v1z"/>
-            <path d="M8 4.466V.534a.25.25 0 01.41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 018 4.466z"/>
-          </svg>
-        </button>
-      </div>
     </header>
 
     <div class="filters">
       <div class="tenant-input-group">
-        <label for="tenant-input" class="tenant-label">Set your tenant to view team activity</label>
+        <label for="tenant-input" class="tenant-label">Set your tenant to view activity</label>
         <div class="tenant-input-row">
           <input
             type="text"
@@ -171,8 +156,6 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
 
   async function loadUsers() {
     const grid = document.getElementById('users-grid')!;
-    const activeCountEl = document.getElementById('active-count')!;
-    const totalCountEl = document.getElementById('total-count')!;
     const params = new URLSearchParams(window.location.search);
     const tenant = params.get('tenant') || 'default';
 
@@ -186,9 +169,6 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
 
       const data = await response.json();
       const users = data.users || [];
-
-      activeCountEl.textContent = String(data.activeCount || 0);
-      totalCountEl.textContent = String(data.totalCount || 0);
 
       if (users.length === 0) {
         grid.innerHTML = `
@@ -205,6 +185,14 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
         `;
       } else {
         grid.innerHTML = users.map(renderUserCard).join('');
+        // Adjust card widths based on count
+        const cards = grid.querySelectorAll('.user-card') as NodeListOf<HTMLElement>;
+        const count = cards.length;
+        let cardWidth = '400px';
+        if (count === 1) cardWidth = '600px';
+        else if (count === 2) cardWidth = '480px';
+        else if (count <= 4) cardWidth = '420px';
+        cards.forEach(c => c.style.width = cardWidth);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -242,8 +230,6 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
   });
 
   // Manual refresh
-  document.getElementById('refresh-btn')?.addEventListener('click', () => loadUsers());
-
   // Auto-refresh every 2 seconds
   let refreshInterval = setInterval(() => loadUsers(), 2000);
 
@@ -296,58 +282,9 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     font-weight: 700;
   }
 
-  .stats-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-  }
-
-  .stat-pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    font-size: 14px;
-  }
-
-  .stat-pill.active .dot {
-    width: 8px;
-    height: 8px;
-    background: var(--accent-green);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
-  .refresh-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .refresh-btn:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-  }
-
   .filters {
     display: flex;
+    justify-content: center;
     gap: 12px;
     margin-bottom: 24px;
     flex-wrap: wrap;
@@ -356,12 +293,14 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
   .tenant-input-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    gap: 10px;
   }
 
   .tenant-label {
-    font-size: 13px;
-    color: var(--text-secondary);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
   }
 
   .tenant-input-row {
@@ -413,15 +352,10 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
   }
 
   .users-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 16px;
-  }
-
-  @media (max-width: 500px) {
-    .users-grid {
-      grid-template-columns: 1fr;
-    }
   }
 
   .empty-state {
@@ -476,6 +410,9 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     border-radius: 8px;
     padding: 16px;
     transition: border-color 0.2s;
+    width: 400px;
+    min-width: 300px;
+    flex-shrink: 1;
   }
 
   .user-card:hover {

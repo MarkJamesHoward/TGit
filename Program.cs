@@ -22,6 +22,14 @@ partial class Program
 
     static async Task<int> Main(string[] args)
     {
+        // Handle tgit --version
+        if (args.Length == 1 && (args[0] == "--version" || args[0] == "-v"))
+        {
+            var version = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
+            Console.WriteLine($"tgit {version}");
+            return 0;
+        }
+
         // Handle tgit --help or tgit help
         if (
             args.Length == 0
@@ -31,8 +39,6 @@ partial class Program
                     args[0] == "--help"
                     || args[0] == "-h"
                     || args[0] == "help"
-                    || args[0] == "--version"
-                    || args[0] == "-v"
                 )
             )
         )
@@ -45,6 +51,21 @@ partial class Program
         if (args.Length == 1 && args[0] == "--clear")
         {
             return await HandleClearCommand();
+        }
+
+        // Handle tgit --reset-config
+        if (args.Length == 1 && args[0] == "--reset-config")
+        {
+            if (File.Exists(ConfigFile))
+            {
+                File.Delete(ConfigFile);
+                Console.WriteLine("Config cleared. A new config will be generated on next run.");
+            }
+            else
+            {
+                Console.WriteLine("No config file found.");
+            }
+            return 0;
         }
 
         // Handle tgit --config commands
@@ -599,8 +620,9 @@ TGIT COMMANDS:
   tgit --config tenant <name>    Set tenant ID for data isolation
 
   tgit --clear                   Delete all tracking data for your tenant
+  tgit --reset-config            Clear local config (tenant regenerated on next run)
   tgit --help, -h, help          Show this help message
-  tgit --version, -v             Show version information
+  tgit --version, -v             Show version
 
 GIT PASSTHROUGH:
   All other commands are passed directly to git with activity tracking.
