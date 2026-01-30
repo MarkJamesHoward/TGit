@@ -60,6 +60,22 @@ jobs:
           ${{ matrix.compress == true && '-p:EnableCompressionInSingleFile=true' || '' }}
           -o publish/${{ matrix.rid }}
 
+      - name: Sign Windows executable
+        if: startsWith(matrix.rid, 'win-') && secrets.AZURE_CLIENT_ID != ''
+        uses: azure/trusted-signing-action@v0
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: https://wus2.codesigning.azure.net/
+          trusted-signing-account-name: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE }}
+          files-folder: publish/${{ matrix.rid }}
+          files-folder-filter: exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
       - name: Package (zip)
         if: matrix.ext == 'zip'
         run: Compress-Archive -Path publish/${{ matrix.rid }}/tgit.exe -DestinationPath TGit-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}.${{ matrix.ext }}
