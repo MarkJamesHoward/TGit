@@ -82,10 +82,6 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     }
   }
 
-  function getInitials(name: string): string {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  }
-
   function escapeHtml(text: string): string {
     const div = document.createElement('div');
     div.textContent = text;
@@ -93,60 +89,66 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
   }
 
   function renderUserCard(user: any): string {
-    const totalFiles = user.activities.reduce((sum: number, a: any) => sum + a.modifiedFiles.length, 0);
-    const avatarColor = `hsl(${user.userName.length * 30 % 360}, 60%, 40%)`;
+    // Group activities by machine name
+    const machineGroups: Record<string, any[]> = {};
+    user.activities.forEach((activity: any) => {
+      const machine = activity.machineName || 'Unknown';
+      if (!machineGroups[machine]) machineGroups[machine] = [];
+      machineGroups[machine].push(activity);
+    });
 
-    const activitiesHtml = user.activities.map((activity: any) => {
-      const filesHtml = activity.modifiedFiles.slice(0, 5).map((file: any) => `
-        <div class="file">
-          <span class="file-status" style="color: ${getStatusColor(file.status)}">${getStatusIcon(file.status)}</span>
-          <span class="file-path">${escapeHtml(file.filePath)}</span>
-          ${file.isStaged ? '<span class="staged-badge">staged</span>' : ''}
-        </div>
-      `).join('');
+    const machineNames = Object.keys(machineGroups);
+    const hasMultipleMachines = machineNames.length > 1;
 
-      const moreFiles = activity.modifiedFiles.length > 5
-        ? `<div class="more-files">+${activity.modifiedFiles.length - 5} more files</div>`
-        : '';
+    const activitiesHtml = Object.entries(machineGroups).map(([machine, activities]) => {
+      const reposHtml = (activities as any[]).map((activity: any) => {
+        const filesHtml = activity.modifiedFiles.slice(0, 5).map((file: any) => `
+          <div class="file">
+            <span class="file-status" style="color: ${getStatusColor(file.status)}">${getStatusIcon(file.status)}</span>
+            <span class="file-path">${escapeHtml(file.filePath)}</span>
+            ${file.isStaged ? '<span class="staged-badge">staged</span>' : ''}
+          </div>
+        `).join('');
+
+        const moreFiles = activity.modifiedFiles.length > 5
+          ? `<div class="more-files">+${activity.modifiedFiles.length - 5} more files</div>`
+          : '';
+
+        return `
+          <div class="repo">
+            <div class="repo-header">
+              <span class="repo-name">${escapeHtml(activity.repoName)}</span>
+              <span class="branch">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                  <path fill-rule="evenodd" d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5zM3.5 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"></path>
+                </svg>
+                ${escapeHtml(activity.branch)}
+              </span>
+            </div>
+            <div class="files">${filesHtml}${moreFiles}</div>
+          </div>
+        `;
+      }).join('');
 
       return `
-        <div class="repo">
-          <div class="repo-header">
-            <span class="repo-name">${escapeHtml(activity.repoName)}</span>
-            <span class="branch">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                <path fill-rule="evenodd" d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5zM3.5 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"></path>
-              </svg>
-              ${escapeHtml(activity.branch)}
-            </span>
-            <span class="machine">${escapeHtml(activity.machineName)}</span>
-          </div>
-          <div class="files">${filesHtml}${moreFiles}</div>
+        <div class="machine-group">
+          ${hasMultipleMachines ? `<div class="machine-header">${escapeHtml(machine)}</div>` : ''}
+          ${reposHtml}
         </div>
       `;
     }).join('');
 
+    // Get first machine name for card header (all activities typically share the same machine)
+    const firstMachine = Object.keys(machineGroups)[0] || 'Unknown';
+
     return `
       <div class="user-card" data-active="${user.isActive}">
+        <span class="status-badge ${user.isActive ? 'active' : 'idle'}">${user.isActive ? 'Active' : 'Idle'}</span>
+        <div class="card-machine-name">${escapeHtml(firstMachine)}</div>
         <div class="user-header">
-          <div class="avatar" style="background-color: ${avatarColor}">${getInitials(user.userName)}</div>
           <div class="user-info">
-            <div class="user-name">
-              ${escapeHtml(user.userName)}
-              <span class="status-badge ${user.isActive ? 'active' : 'idle'}">${user.isActive ? 'Active' : 'Idle'}</span>
-            </div>
-            <div class="user-email">${escapeHtml(user.userEmail)}</div>
-            <div class="last-activity">Last activity: ${getTimeSince(user.lastActivity)}</div>
-          </div>
-          <div class="stats">
-            <div class="stat">
-              <span class="stat-value">${user.activities.length}</span>
-              <span class="stat-label">${user.activities.length === 1 ? 'repo' : 'repos'}</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">${totalFiles}</span>
-              <span class="stat-label">${totalFiles === 1 ? 'file' : 'files'}</span>
-            </div>
+            <div class="user-name">${escapeHtml(user.userName)}</div>
+            <div class="last-activity"><span class="field-label">Last activity:</span> ${getTimeSince(user.lastActivity)}</div>
           </div>
         </div>
         <div class="repos">${activitiesHtml}</div>
@@ -229,7 +231,6 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     if (e.key === 'Enter') goToTenant();
   });
 
-  // Manual refresh
   // Auto-refresh every 2 seconds
   let refreshInterval = setInterval(() => loadUsers(), 2000);
 
@@ -251,6 +252,9 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     max-width: 1400px;
     margin: 0 auto;
     padding: 24px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
 
   header {
@@ -356,6 +360,9 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     flex-wrap: wrap;
     justify-content: center;
     gap: 16px;
+    flex: 1;
+    align-content: flex-start;
+    padding-top: 10vh;
   }
 
   .empty-state {
@@ -413,6 +420,20 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     width: 400px;
     min-width: 300px;
     flex-shrink: 1;
+    position: relative;
+  }
+
+  .user-card > .status-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
+
+  .card-machine-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
   }
 
   .user-card:hover {
@@ -431,26 +452,14 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
   .user-header {
     display: flex;
     gap: 12px;
-    align-items: flex-start;
-    margin-bottom: 12px;
-  }
-
-  .avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    display: flex;
     align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 16px;
-    flex-shrink: 0;
-    color: white;
+    margin-bottom: 12px;
   }
 
   .user-info {
     flex: 1;
     min-width: 0;
+    text-align: center;
   }
 
   .user-name {
@@ -458,6 +467,7 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     font-size: 16px;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     flex-wrap: wrap;
   }
@@ -513,7 +523,7 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
   .repos {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 16px;
   }
 
   .repo {
@@ -543,10 +553,19 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     font-size: 13px;
   }
 
-  .machine {
-    color: var(--text-secondary);
-    font-size: 12px;
-    margin-left: auto;
+  .machine-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .machine-header {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 4px;
   }
 
   .files {
@@ -589,5 +608,10 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     color: var(--text-secondary);
     font-size: 12px;
     padding-left: 20px;
+  }
+
+  .field-label {
+    color: var(--text-secondary);
+    font-weight: 500;
   }
 </style>
