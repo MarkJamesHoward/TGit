@@ -238,15 +238,15 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || '';
   // Manual refresh
   document.getElementById('refresh-btn')?.addEventListener('click', () => loadUsers());
 
-  // Auto-refresh every 30 seconds
-  let refreshInterval = setInterval(() => loadUsers(), 30000);
+  // Auto-refresh every 2 seconds
+  let refreshInterval = setInterval(() => loadUsers(), 2000);
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       clearInterval(refreshInterval);
     } else {
       loadUsers();
-      refreshInterval = setInterval(() => loadUsers(), 30000);
+      refreshInterval = setInterval(() => loadUsers(), 2000);
     }
   });
 
