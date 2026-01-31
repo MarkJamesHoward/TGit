@@ -88,70 +88,56 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     return div.innerHTML;
   }
 
-  function renderUserCard(user: any): string {
-    // Group activities by machine name
-    const machineGroups: Record<string, any[]> = {};
-    user.activities.forEach((activity: any) => {
-      const machine = activity.machineName || 'Unknown';
-      if (!machineGroups[machine]) machineGroups[machine] = [];
-      machineGroups[machine].push(activity);
-    });
+  function renderMachineCard(machineCard: any): string {
+    // Render repositories directly - no machine grouping needed
+    const reposHtml = machineCard.activities.map((activity: any) => {
+      const filesHtml = activity.modifiedFiles.slice(0, 5).map((file: any) => `
+        <div class="file">
+          <span class="file-status" style="color: ${getStatusColor(file.status)}">${getStatusIcon(file.status)}</span>
+          <span class="file-path">${escapeHtml(file.filePath)}</span>
+          ${file.isStaged ? '<span class="staged-badge">staged</span>' : ''}
+        </div>
+      `).join('');
 
-    const machineNames = Object.keys(machineGroups);
-    const hasMultipleMachines = machineNames.length > 1;
-
-    const activitiesHtml = Object.entries(machineGroups).map(([machine, activities]) => {
-      const reposHtml = (activities as any[]).map((activity: any) => {
-        const filesHtml = activity.modifiedFiles.slice(0, 5).map((file: any) => `
-          <div class="file">
-            <span class="file-status" style="color: ${getStatusColor(file.status)}">${getStatusIcon(file.status)}</span>
-            <span class="file-path">${escapeHtml(file.filePath)}</span>
-            ${file.isStaged ? '<span class="staged-badge">staged</span>' : ''}
-          </div>
-        `).join('');
-
-        const moreFiles = activity.modifiedFiles.length > 5
-          ? `<div class="more-files">+${activity.modifiedFiles.length - 5} more files</div>`
-          : '';
-
-        return `
-          <div class="repo">
-            <div class="repo-header">
-              <span class="repo-name">${escapeHtml(activity.repoName)}</span>
-              <span class="branch">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                  <path fill-rule="evenodd" d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5zM3.5 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"></path>
-                </svg>
-                ${escapeHtml(activity.branch)}
-              </span>
-            </div>
-            <div class="files">${filesHtml}${moreFiles}</div>
-          </div>
-        `;
-      }).join('');
+      const moreFiles = activity.modifiedFiles.length > 5
+        ? `<div class="more-files">+${activity.modifiedFiles.length - 5} more files</div>`
+        : '';
 
       return `
-        <div class="machine-group">
-          ${hasMultipleMachines ? `<div class="machine-header">${escapeHtml(machine)}</div>` : ''}
-          ${reposHtml}
+        <div class="repo">
+          <div class="repo-header">
+            <span class="repo-name">${escapeHtml(activity.repoName)}</span>
+            <span class="branch">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path fill-rule="evenodd" d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5zM3.5 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"></path>
+              </svg>
+              ${escapeHtml(activity.branch)}
+            </span>
+          </div>
+          <div class="files">${filesHtml}${moreFiles}</div>
         </div>
       `;
     }).join('');
 
-    // Get first machine name for card header (all activities typically share the same machine)
-
-
     return `
-      <div class="user-card" data-active="${user.isActive}">
-        <span class="status-badge ${user.isActive ? 'active' : 'idle'}">${user.isActive ? 'Active' : 'Idle'}</span>
+      <div class="machine-card" data-active="${machineCard.isActive}">
+        <span class="status-badge ${machineCard.isActive ? 'active' : 'idle'}">${machineCard.isActive ? 'Active' : 'Idle'}</span>
 
-        <div class="user-header">
+        <div class="machine-header">
+          <div class="machine-name">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            ${escapeHtml(machineCard.machineName)}
+          </div>
           <div class="user-info">
-            <div class="user-name">${escapeHtml(user.userName)}</div>
-            <div class="last-activity"><span class="field-label">Last activity:</span> ${getTimeSince(user.lastActivity)}</div>
+            <span class="user-name">${escapeHtml(machineCard.userName)}</span>
+            <span class="last-activity"><span class="field-label">Last activity:</span> ${getTimeSince(machineCard.lastActivity)}</span>
           </div>
         </div>
-        <div class="repos">${activitiesHtml}</div>
+        <div class="repos">${reposHtml}</div>
       </div>
     `;
   }
@@ -172,7 +158,31 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
       const data = await response.json();
       const users = data.users || [];
 
-      if (users.length === 0) {
+      // Transform users into machine cards (one card per user-machine combination)
+      const machineCards: any[] = [];
+      users.forEach(user => {
+        // Group this user's activities by machine
+        const machineGroups: Record<string, any[]> = {};
+        user.activities.forEach((activity: any) => {
+          const machine = activity.machineName || 'Unknown';
+          if (!machineGroups[machine]) machineGroups[machine] = [];
+          machineGroups[machine].push(activity);
+        });
+
+        // Create a card for each user-machine combination
+        Object.entries(machineGroups).forEach(([machine, activities]) => {
+          machineCards.push({
+            machineName: machine,
+            userName: user.userName,
+            userEmail: user.userEmail,
+            isActive: user.isActive,
+            lastActivity: user.lastActivity,
+            activities: activities
+          });
+        });
+      });
+
+      if (machineCards.length === 0) {
         grid.innerHTML = `
           <div class="empty-state">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -182,18 +192,20 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
             <h2>No Activity Yet</h2>
-            <p>When developers use TGit, their activity will appear here.</p>
+            <p>When developers use TGit, their machines will appear here.</p>
           </div>
         `;
       } else {
-        grid.innerHTML = users.map(renderUserCard).join('');
+        grid.innerHTML = machineCards.map(renderMachineCard).join('');
         // Adjust card widths based on count
-        const cards = grid.querySelectorAll('.user-card') as NodeListOf<HTMLElement>;
+        const cards = grid.querySelectorAll('.machine-card') as NodeListOf<HTMLElement>;
         const count = cards.length;
         let cardWidth = '400px';
         if (count === 1) cardWidth = '600px';
         else if (count === 2) cardWidth = '480px';
         else if (count <= 4) cardWidth = '420px';
+        else if (count <= 6) cardWidth = '380px';
+        else cardWidth = '350px';
         cards.forEach(c => c.style.width = cardWidth);
       }
     } catch (error) {
@@ -220,6 +232,9 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
   if (tenantInput && urlTenant && urlTenant !== 'default') {
     tenantInput.value = urlTenant;
   }
+
+  // Auto-focus on tenant input when page loads
+  tenantInput?.focus();
 
   function goToTenant() {
     const tenant = tenantInput?.value.trim().toLowerCase() || 'default';
@@ -411,7 +426,7 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
 </style>
 
 <style is:global>
-  .user-card {
+  .machine-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -423,47 +438,56 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     position: relative;
   }
 
-  .user-card > .status-badge {
+  .machine-card > .status-badge {
     position: absolute;
     top: 12px;
     right: 12px;
   }
 
-
-  .user-card:hover {
+  .machine-card:hover {
     border-color: var(--accent-blue);
   }
 
-  .user-card[data-active="true"] {
+  .machine-card[data-active="true"] {
     border-left: 3px solid var(--accent-green);
   }
 
-  .user-card[data-active="false"] {
+  .machine-card[data-active="false"] {
     border-left: 3px solid var(--text-secondary);
     opacity: 0.7;
   }
 
-  .user-header {
-    display: flex;
-    gap: 12px;
-    align-items: center;
+  .machine-header {
     margin-bottom: 12px;
   }
 
-  .user-info {
-    flex: 1;
-    min-width: 0;
-    text-align: center;
-  }
-
-  .user-name {
-    font-weight: 600;
-    font-size: 16px;
+  .machine-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent-purple);
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 8px;
-    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .machine-name svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-left: 28px;
+  }
+
+  .user-info .user-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
   }
 
   .status-badge {
@@ -545,21 +569,6 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     gap: 4px;
     color: var(--text-secondary);
     font-size: 13px;
-  }
-
-  .machine-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .machine-header {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    padding-bottom: 4px;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 4px;
   }
 
   .files {
