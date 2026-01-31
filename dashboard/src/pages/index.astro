@@ -210,6 +210,14 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
         else if (count <= 6) cardWidth = '380px';
         else cardWidth = '350px';
         cards.forEach(c => c.style.width = cardWidth);
+
+        // Focus first card if tenant was selected
+        const params = new URLSearchParams(window.location.search);
+        const tenant = params.get('tenant');
+        if (tenant && tenant !== 'default' && cards.length > 0) {
+          cards[0].tabIndex = 0;
+          cards[0].focus();
+        }
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -236,8 +244,10 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     tenantInput.value = urlTenant;
   }
 
-  // Auto-focus on tenant input when page loads
-  tenantInput?.focus();
+  // Auto-focus on tenant input when page loads (only if no tenant selected)
+  if (!urlTenant || urlTenant === 'default') {
+    tenantInput?.focus();
+  }
 
   function goToTenant() {
     const tenant = tenantInput?.value.trim().toLowerCase() || 'default';
