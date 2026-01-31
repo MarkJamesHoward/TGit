@@ -139,12 +139,12 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     }).join('');
 
     // Get first machine name for card header (all activities typically share the same machine)
-    const firstMachine = Object.keys(machineGroups)[0] || 'Unknown';
+
 
     return `
       <div class="user-card" data-active="${user.isActive}">
         <span class="status-badge ${user.isActive ? 'active' : 'idle'}">${user.isActive ? 'Active' : 'Idle'}</span>
-        <div class="card-machine-name">${escapeHtml(firstMachine)}</div>
+
         <div class="user-header">
           <div class="user-info">
             <div class="user-name">${escapeHtml(user.userName)}</div>
@@ -429,12 +429,6 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
     right: 12px;
   }
 
-  .card-machine-name {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 8px;
-  }
 
   .user-card:hover {
     border-color: var(--accent-blue);

@@ -35,7 +35,9 @@
       "Bash($env:TGIT_DEBUG=\"1\")",
       "Bash(d:devTGitbinDebugnet9.0tgit.exe status)",
       "Bash(dotnet tool update:*)",
-      "Bash(dotnet tool:*)"
+      "Bash(dotnet tool:*)",
+      "Bash(gh run view:*)",
+      "Bash(git config:*)"
     ]
   }
 }
