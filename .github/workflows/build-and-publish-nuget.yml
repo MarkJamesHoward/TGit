@@ -61,7 +61,7 @@ jobs:
           -o publish/${{ matrix.rid }}
 
       - name: Sign Windows executable
-        if: startsWith(matrix.rid, 'win-') && secrets.SIGNING_CERT_PFX != ''
+        if: startsWith(matrix.rid, 'win-')
         shell: pwsh
         env:
           SIGNING_CERT_PFX: ${{ secrets.SIGNING_CERT_PFX }}
