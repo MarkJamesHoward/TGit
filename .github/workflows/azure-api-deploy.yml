@@ -1,4 +1,4 @@
-name: Deploy API to Azure App Service
+name: Deploy API to Azure
 
 on:
   push:

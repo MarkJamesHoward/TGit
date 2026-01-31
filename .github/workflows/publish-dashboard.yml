@@ -1,4 +1,4 @@
-name: Deploy Dashboard to Azure Static Web App
+name: Publish Dashboard
 
 on:
   push:
