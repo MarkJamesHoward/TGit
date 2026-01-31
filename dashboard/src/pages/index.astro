@@ -90,7 +90,10 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
 
   function renderMachineCard(machineCard: any): string {
     // Render repositories directly - no machine grouping needed
-    const reposHtml = machineCard.activities.map((activity: any) => {
+    // Filter out repos with no modified files
+    const reposHtml = machineCard.activities
+      .filter((activity: any) => activity.modifiedFiles && activity.modifiedFiles.length > 0)
+      .map((activity: any) => {
       const filesHtml = activity.modifiedFiles.slice(0, 5).map((file: any) => `
         <div class="file">
           <span class="file-status" style="color: ${getStatusColor(file.status)}">${getStatusIcon(file.status)}</span>
