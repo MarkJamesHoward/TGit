@@ -1,0 +1,312 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="TGit - Sign In">
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo">
+        <svg width="48" height="48" viewBox="0 0 32 32" fill="none">
+          <path d="M16 2L4 8v16l12 6 12-6V8L16 2z" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M16 8v16M8 12l8 4 8-4" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <h1>TGit Dashboard</h1>
+      </div>
+
+      <p class="login-description">Sign in to sync your settings (like your tenant) across devices. This is optional — the dashboard works without signing in.</p>
+
+      <div id="auth-section">
+        <div class="input-group">
+          <label for="display-name">Display Name</label>
+          <input type="text" id="display-name" placeholder="Enter your name..." autocomplete="username webauthn" />
+        </div>
+
+        <div class="button-group">
+          <button id="login-btn" class="btn btn-primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+              <polyline points="10 17 15 12 10 7"/>
+              <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            Sign in with Passkey
+          </button>
+          <button id="register-btn" class="btn btn-secondary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/>
+              <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+            Register New Passkey
+          </button>
+        </div>
+      </div>
+
+      <div id="status-message" class="status-message" style="display: none;"></div>
+
+      <a href="/" class="back-link">Back to dashboard</a>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+
+  const displayNameInput = document.getElementById('display-name') as HTMLInputElement;
+  const loginBtn = document.getElementById('login-btn')!;
+  const registerBtn = document.getElementById('register-btn')!;
+  const statusEl = document.getElementById('status-message')!;
+
+  function showStatus(message: string, isError = false) {
+    statusEl.textContent = message;
+    statusEl.className = `status-message ${isError ? 'error' : 'success'}`;
+    statusEl.style.display = 'block';
+  }
+
+  // Register
+  registerBtn.addEventListener('click', async () => {
+    const displayName = displayNameInput.value.trim();
+    if (!displayName) {
+      showStatus('Please enter a display name', true);
+      displayNameInput.focus();
+      return;
+    }
+
+    try {
+      showStatus('Starting registration...');
+
+      // Get registration options
+      const optRes = await fetch('/api/auth/register-options', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName }),
+      });
+      const optData = await optRes.json();
+      if (!optRes.ok) throw new Error(optData.error);
+
+      // Start WebAuthn ceremony
+      const credential = await startRegistration({ optionsJSON: optData.options });
+
+      // Verify with server
+      const verifyRes = await fetch('/api/auth/register-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          credential,
+          userId: optData.userId,
+          displayName,
+        }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok) throw new Error(verifyData.error);
+
+      showStatus('Registration successful! Redirecting...');
+      window.location.href = '/';
+    } catch (err: any) {
+      if (err.name === 'NotAllowedError') {
+        showStatus('Registration was cancelled', true);
+      } else {
+        showStatus(err.message || 'Registration failed', true);
+      }
+    }
+  });
+
+  // Login
+  loginBtn.addEventListener('click', async () => {
+    const displayName = displayNameInput.value.trim();
+
+    try {
+      showStatus('Starting authentication...');
+
+      const optRes = await fetch('/api/auth/login-options', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName: displayName || undefined }),
+      });
+      const optData = await optRes.json();
+      if (!optRes.ok) throw new Error(optData.error);
+
+      const credential = await startAuthentication({ optionsJSON: optData.options });
+
+      const verifyRes = await fetch('/api/auth/login-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          credential,
+          challengeKey: optData.challengeKey,
+        }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok) throw new Error(verifyData.error);
+
+      showStatus('Signed in! Redirecting...');
+
+      // Redirect with last tenant if available
+      if (verifyData.lastTenant) {
+        window.location.href = `/?tenant=${encodeURIComponent(verifyData.lastTenant)}`;
+      } else {
+        window.location.href = '/';
+      }
+    } catch (err: any) {
+      if (err.name === 'NotAllowedError') {
+        showStatus('Authentication was cancelled', true);
+      } else {
+        showStatus(err.message || 'Authentication failed', true);
+      }
+    }
+  });
+
+  // Allow Enter to trigger login
+  displayNameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') loginBtn.click();
+  });
+
+  displayNameInput.focus();
+</script>
+
+<style>
+  .login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .login-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 48px;
+    max-width: 440px;
+    width: 100%;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .logo svg {
+    color: var(--accent-blue);
+  }
+
+  .logo h1 {
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .login-description {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  .back-link {
+    display: block;
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .back-link:hover {
+    color: var(--accent-blue);
+  }
+
+  .input-group {
+    margin-bottom: 24px;
+  }
+
+  .input-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+
+  .input-group input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 15px;
+  }
+
+  .input-group input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+  }
+
+  .input-group input::placeholder {
+    color: var(--text-secondary);
+  }
+
+  .button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--accent-purple);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #7c3aed;
+  }
+
+  .btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent-blue);
+  }
+
+  .status-message {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .status-message.error {
+    background: rgba(248, 81, 73, 0.1);
+    color: var(--accent-red);
+    border: 1px solid rgba(248, 81, 73, 0.3);
+  }
+
+  .status-message.success {
+    background: rgba(63, 185, 80, 0.1);
+    color: var(--accent-green);
+    border: 1px solid rgba(63, 185, 80, 0.3);
+  }
+</style>

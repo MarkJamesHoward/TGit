@@ -2,9 +2,16 @@
 import Layout from '../layouts/Layout.astro';
 
 const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app';
+const user = Astro.locals.user;
+
+// If no tenant param and user has a lastTenant, redirect
+const tenantParam = Astro.url.searchParams.get('tenant');
+if (!tenantParam && user?.lastTenant) {
+  return Astro.redirect(`/?tenant=${encodeURIComponent(user.lastTenant)}`);
+}
 ---
 
-<Layout title="TGit Dashboard">
+<Layout title="TGit Dashboard" user={user}>
   <div class="container">
     <header>
       <div class="header-top">
@@ -251,6 +258,12 @@ const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://api.tgit.app'
 
   function goToTenant() {
     const tenant = tenantInput?.value.trim().toLowerCase() || 'default';
+    // Save tenant preference server-side
+    fetch('/api/tenant/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenant }),
+    }).catch(() => {}); // fire-and-forget
     window.location.href = `/?tenant=${encodeURIComponent(tenant)}`;
   }
 

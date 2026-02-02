@@ -1,9 +1,10 @@
 ---
 interface Props {
   title: string;
+  user?: { displayName: string } | null;
 }
 
-const { title } = Astro.props;
+const { title, user } = Astro.props;
 ---
 
 <!doctype html>
@@ -16,7 +17,23 @@ const { title } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
+    <div class="user-bar">
+      {user ? (
+        <>
+          <span class="user-bar-name">{user.displayName}</span>
+          <button id="logout-btn" class="user-bar-logout">Sign out</button>
+        </>
+      ) : (
+        <a href="/login" class="user-bar-signin">Sign in</a>
+      )}
+    </div>
     <slot />
+    <script>
+      document.getElementById('logout-btn')?.addEventListener('click', async () => {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/';
+      });
+    </script>
   </body>
 </html>
 
@@ -60,5 +77,47 @@ const { title } = Astro.props;
 
   a:hover {
     text-decoration: underline;
+  }
+
+  .user-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 24px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .user-bar-name {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .user-bar-logout {
+    font-size: 13px;
+    color: var(--text-secondary);
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .user-bar-logout:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+  }
+
+  .user-bar-signin {
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+
+  .user-bar-signin:hover {
+    color: var(--text-primary);
+    text-decoration: none;
   }
 </style>
