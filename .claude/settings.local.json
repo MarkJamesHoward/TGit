@@ -37,7 +37,10 @@
       "Bash(dotnet tool update:*)",
       "Bash(dotnet tool:*)",
       "Bash(gh run view:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(npx astro check)",
+      "Bash(npm run build:*)",
+      "Bash(git status:*)"
     ]
   }
 }
