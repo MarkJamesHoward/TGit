@@ -52,5 +52,4 @@ jobs:
         with:
           app-name: 'TgitDashboardAsApp'
           publish-profile: ${{ secrets.AZURE_DASHBOARD_PUBLISH_PROFILE }}
-          startup-command: 'node server/entry.mjs'
           package: ./dashboard/dist
