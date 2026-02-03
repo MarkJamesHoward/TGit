@@ -40,9 +40,17 @@ jobs:
           WEBAUTHN_RP_ID: ${{ secrets.WEBAUTHN_RP_ID }}
           WEBAUTHN_ORIGIN: ${{ secrets.WEBAUTHN_ORIGIN }}
 
+      - name: Prepare deployment package
+        working-directory: ./dashboard
+        run: |
+          cp package.json dist/
+          cp package-lock.json dist/
+          cd dist && npm ci --omit=dev
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'TgitDashboardAsApp'
           publish-profile: ${{ secrets.AZURE_DASHBOARD_PUBLISH_PROFILE }}
+          startup-command: 'node server/entry.mjs'
           package: ./dashboard/dist
