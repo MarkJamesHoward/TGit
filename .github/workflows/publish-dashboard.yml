@@ -33,9 +33,6 @@ jobs:
         run: npm run build
         env:
           PUBLIC_API_BASE_URL: ${{ secrets.PUBLIC_API_BASE_URL }}
-          COSMOS_ENDPOINT: ${{ secrets.COSMOS_ENDPOINT }}
-          COSMOS_KEY: ${{ secrets.COSMOS_KEY }}
-          COSMOS_DATABASE: ${{ secrets.COSMOS_DATABASE }}
           WEBAUTHN_RP_NAME: ${{ secrets.WEBAUTHN_RP_NAME }}
           WEBAUTHN_RP_ID: ${{ secrets.WEBAUTHN_RP_ID }}
           WEBAUTHN_ORIGIN: ${{ secrets.WEBAUTHN_ORIGIN }}
