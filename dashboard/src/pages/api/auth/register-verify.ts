@@ -1,10 +1,15 @@
-import type { APIRoute } from 'astro';
-import { verifyRegistrationResponse } from '@simplewebauthn/server';
-import { createUser, getUser, createCredential, getChallenge } from '../../../lib/db';
-import { createUserSession } from '../../../lib/auth';
+import type { APIRoute } from "astro";
+import { verifyRegistrationResponse } from "@simplewebauthn/server";
+import {
+  createUser,
+  getUser,
+  createCredential,
+  getChallenge,
+} from "../../../lib/db";
+import { createUserSession } from "../../../lib/auth";
 
-const rpID = import.meta.env.WEBAUTHN_RP_ID || process.env.WEBAUTHN_RP_ID || 'localhost';
-const origin = import.meta.env.WEBAUTHN_ORIGIN || process.env.WEBAUTHN_ORIGIN || 'http://localhost:4321';
+const rpID = process.env.WEBAUTHN_RP_ID || "localhost";
+const origin = process.env.WEBAUTHN_ORIGIN || "http://localhost:4321";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -12,7 +17,10 @@ export const POST: APIRoute = async ({ request }) => {
 
     const expectedChallenge = await getChallenge(`reg_${userId}`);
     if (!expectedChallenge) {
-      return new Response(JSON.stringify({ error: 'Challenge expired or not found' }), { status: 400 });
+      return new Response(
+        JSON.stringify({ error: "Challenge expired or not found" }),
+        { status: 400 },
+      );
     }
 
     const verification = await verifyRegistrationResponse({
@@ -23,10 +31,16 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     if (!verification.verified || !verification.registrationInfo) {
-      return new Response(JSON.stringify({ error: 'Verification failed' }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Verification failed" }), {
+        status: 400,
+      });
     }
 
-    const { credential: regCred, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
+    const {
+      credential: regCred,
+      credentialDeviceType,
+      credentialBackedUp,
+    } = verification.registrationInfo;
 
     // Create user if doesn't exist
     const existingUser = await getUser(userId);
@@ -40,7 +54,9 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Store credential
     // Convert Uint8Array to base64url string for storage
-    const publicKeyBase64 = Buffer.from(regCred.publicKey).toString('base64url');
+    const publicKeyBase64 = Buffer.from(regCred.publicKey).toString(
+      "base64url",
+    );
 
     await createCredential({
       id: crypto.randomUUID(),
@@ -57,12 +73,14 @@ export const POST: APIRoute = async ({ request }) => {
 
     return new Response(JSON.stringify({ verified: true }), {
       headers: {
-        'Content-Type': 'application/json',
-        'Set-Cookie': cookie,
+        "Content-Type": "application/json",
+        "Set-Cookie": cookie,
       },
     });
   } catch (error: any) {
-    console.error('register-verify error:', error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    console.error("register-verify error:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+    });
   }
 };
