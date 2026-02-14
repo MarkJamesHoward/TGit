@@ -14,17 +14,62 @@ const { title } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
     <title>{title}</title>
-    <!-- Google Analytics -->
-    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-C0VPZPGG7E"></script>
+    <!-- Google Consent Mode v2 + Analytics -->
     <script is:inline>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+
+      // Default: denied for EEA, granted elsewhere
+      gtag('consent', 'default', {
+        analytics_storage: 'denied',
+        region: ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO']
+      });
+      gtag('consent', 'default', {
+        analytics_storage: 'granted'
+      });
+
+      // Restore saved preference
+      var consent = localStorage.getItem('cookie-consent');
+      if (consent === 'accepted') {
+        gtag('consent', 'update', { analytics_storage: 'granted' });
+      } else if (consent === 'declined') {
+        gtag('consent', 'update', { analytics_storage: 'denied' });
+      }
+    </script>
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-C0VPZPGG7E"></script>
+    <script is:inline>
       gtag('js', new Date());
       gtag('config', 'G-C0VPZPGG7E');
     </script>
   </head>
   <body>
     <slot />
+
+    <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#161b22;border-top:1px solid #30363d;padding:12px 24px;z-index:9999;font-size:14px;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;">
+        <span style="color:#8b949e;">This site uses cookies for analytics.</span>
+        <button id="cookie-accept" style="background:#58a6ff;color:#fff;border:none;border-radius:6px;padding:6px 16px;cursor:pointer;font-size:13px;">Accept</button>
+        <button id="cookie-decline" style="background:none;color:#8b949e;border:1px solid #30363d;border-radius:6px;padding:6px 16px;cursor:pointer;font-size:13px;">Decline</button>
+      </div>
+    </div>
+
+    <script is:inline>
+      (function() {
+        if (localStorage.getItem('cookie-consent')) return;
+        document.getElementById('cookie-banner').style.display = 'block';
+
+        document.getElementById('cookie-accept').addEventListener('click', function() {
+          localStorage.setItem('cookie-consent', 'accepted');
+          gtag('consent', 'update', { analytics_storage: 'granted' });
+          document.getElementById('cookie-banner').style.display = 'none';
+        });
+
+        document.getElementById('cookie-decline').addEventListener('click', function() {
+          localStorage.setItem('cookie-consent', 'declined');
+          document.getElementById('cookie-banner').style.display = 'none';
+        });
+      })();
+    </script>
   </body>
 </html>
 
