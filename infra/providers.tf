@@ -16,6 +16,10 @@ terraform {
       source  = "hashicorp/azuread"
       version = "~>3.0"
     }
+    github = {
+      source  = "integrations/github"
+      version = "~>6.0"
+    }
     random = {
       source  = "hashicorp/random"
       version = "~>3.0"
@@ -25,4 +29,9 @@ terraform {
 
 provider "azurerm" {
   features {}
+}
+
+provider "github" {
+  owner = "MarkJamesHoward"
+  token = var.github_token
 }
