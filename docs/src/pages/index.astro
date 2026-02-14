@@ -34,6 +34,7 @@ const currentVersion = csproj.match(/<Version>(.*?)<\/Version>/)?.[1] ?? '0.0.0'
           <a href="#macos-install" class="sidebar-link">macOS Install</a>
           <a href="#linux-install" class="sidebar-link">Linux Install</a>
           <a href="#usage" class="sidebar-link">Usage</a>
+          <a href="#git-alias" class="sidebar-link">Git Alias</a>
           <a href="#tenants" class="sidebar-link">Tenants</a>
           <a href="#configuration" class="sidebar-link">Configuration</a>
           <a href="#dashboard" class="sidebar-link">Dashboard</a>
@@ -385,6 +386,37 @@ tgit --help</code></pre>
           </div>
           <p style="margin-top: 1rem;">All other git commands pass through transparently without tracking.</p>
         </div>
+      </section>
+
+      <section class="section" id="git-alias">
+        <h2>Git Alias</h2>
+        <p>If you want to use <code>git</code> as normal and have it automatically use TGit, you can create a shell alias. This means every <code>git</code> command you run will be transparently handled by TGit.</p>
+
+        <div class="usage-examples">
+          <div class="example">
+            <h4>Windows (PowerShell)</h4>
+            <p style="font-size: 0.875rem;">Add to your PowerShell profile (<code>notepad $PROFILE</code>):</p>
+            <pre><code>Set-Alias -Name git -Value tgit</code></pre>
+          </div>
+
+          <div class="example">
+            <h4>macOS (zsh)</h4>
+            <p style="font-size: 0.875rem;">Add to <code>~/.zshrc</code>:</p>
+            <pre><code>alias git='tgit'</code></pre>
+            <p style="font-size: 0.875rem;">Then reload:</p>
+            <pre><code>source ~/.zshrc</code></pre>
+          </div>
+
+          <div class="example">
+            <h4>Linux (bash)</h4>
+            <p style="font-size: 0.875rem;">Add to <code>~/.bashrc</code>:</p>
+            <pre><code>alias git='tgit'</code></pre>
+            <p style="font-size: 0.875rem;">Then reload:</p>
+            <pre><code>source ~/.bashrc</code></pre>
+          </div>
+        </div>
+
+        <p>To remove the alias, simply delete the line from your profile and restart your terminal.</p>
       </section>
 
       <section class="section" id="tenants">
