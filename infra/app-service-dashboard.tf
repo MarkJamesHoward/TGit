@@ -15,28 +15,39 @@ resource "azurerm_linux_web_app" "tgit" {
   service_plan_id     = azurerm_service_plan.tgit.id
 
   site_config {
+    app_command_line = "node server/entry.mjs"
+
     application_stack {
       node_version = "20-lts"
     }
   }
+
+  app_settings = {
+    "HOST"             = "0.0.0.0"
+    "COSMOS_ENDPOINT"  = azurerm_cosmosdb_account.tgit.endpoint
+    "COSMOS_KEY"       = azurerm_cosmosdb_account.tgit.primary_key
+    "COSMOS_DATABASE"  = "tgit-dashboard"
+    "WEBAUTHN_RP_NAME" = var.webauthn_rp_name
+    "WEBAUTHN_RP_ID"   = var.webauthn_rp_id
+    "WEBAUTHN_ORIGIN"  = var.webauthn_origin
+  }
 }
 
-# TODO: Uncomment after App Services are created
-# # Custom domain
-# resource "azurerm_app_service_custom_hostname_binding" "tgit_dashboard" {
-#   hostname            = "tgit.app"
-#   app_service_name    = azurerm_linux_web_app.tgit.name
-#   resource_group_name = azurerm_resource_group.tgit.name
-# }
-#
-# # Managed SSL certificate
-# resource "azurerm_app_service_managed_certificate" "tgit_dashboard" {
-#   custom_hostname_binding_id = azurerm_app_service_custom_hostname_binding.tgit_dashboard.id
-# }
-#
-# # Bind the certificate to the custom domain
-# resource "azurerm_app_service_certificate_binding" "tgit_dashboard" {
-#   hostname_binding_id = azurerm_app_service_custom_hostname_binding.tgit_dashboard.id
-#   certificate_id      = azurerm_app_service_managed_certificate.tgit_dashboard.id
-#   ssl_state           = "SniEnabled"
-# }
+# Custom domain
+resource "azurerm_app_service_custom_hostname_binding" "tgit_dashboard" {
+  hostname            = "tgit.app"
+  app_service_name    = azurerm_linux_web_app.tgit.name
+  resource_group_name = azurerm_resource_group.tgit.name
+}
+
+# Managed SSL certificate
+resource "azurerm_app_service_managed_certificate" "tgit_dashboard" {
+  custom_hostname_binding_id = azurerm_app_service_custom_hostname_binding.tgit_dashboard.id
+}
+
+# Bind the certificate to the custom domain
+resource "azurerm_app_service_certificate_binding" "tgit_dashboard" {
+  hostname_binding_id = azurerm_app_service_custom_hostname_binding.tgit_dashboard.id
+  certificate_id      = azurerm_app_service_managed_certificate.tgit_dashboard.id
+  ssl_state           = "SniEnabled"
+}
