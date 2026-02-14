@@ -9,6 +9,10 @@ on:
       - '.github/workflows/azure-api-deploy.yml'
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -34,9 +38,15 @@ jobs:
         run: dotnet publish TGitApi.csproj --configuration Release --no-build --output ./publish
         working-directory: ./api
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'TgitAPI'
-          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
+          app-name: 'TGit-API'
           package: ./api/publish

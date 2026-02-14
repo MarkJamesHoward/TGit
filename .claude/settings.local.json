@@ -40,7 +40,12 @@
       "Bash(git config:*)",
       "Bash(npx astro check)",
       "Bash(npm run build:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(az storage account create:*)",
+      "Bash(az storage container create:*)",
+      "Bash(terraform import:*)",
+      "Bash(terraform plan:*)",
+      "Bash(terraform apply:*)"
     ]
   }
 }

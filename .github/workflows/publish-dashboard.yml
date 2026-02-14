@@ -9,6 +9,10 @@ on:
       - '.github/workflows/publish-dashboard.yml'
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -44,9 +48,15 @@ jobs:
           cp package-lock.json dist/
           cd dist && npm ci --omit=dev
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'TgitDashboardAsApp'
-          publish-profile: ${{ secrets.AZURE_DASHBOARD_PUBLISH_PROFILE }}
+          app-name: 'TGit-Dashboard'
           package: ./dashboard/dist

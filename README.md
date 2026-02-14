@@ -190,6 +190,17 @@ git push origin v1.4.0
 
 This builds win-x64 and win-arm64 binaries, creates a GitHub release, and submits to winget.
 
+## Terraform (Azure)
+
+For Terraform in Docker, set these values in [.terraform/azure_secrets.txt](.terraform/azure_secrets.txt):
+
+- `ARM_CLIENT_ID`
+- `ARM_CLIENT_SECRET`
+- `ARM_TENANT_ID`
+- `ARM_SUBSCRIPTION_ID`
+
+Then run the commands in [.terraform/docker run details.txt](.terraform/docker%20run%20details.txt) to execute `init`, `validate`, `plan`, and `apply` with `--env-file`.
+
 ## License
 
 MIT
