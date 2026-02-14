@@ -1236,32 +1236,4 @@ PUBLIC_API_BASE_URL=https://your-api-server:5000 npm run build</code></pre>
   }
 
   runDemoAnimation();
-
-  // GA: Track install command clicks as download events
-  document.querySelectorAll('.install-cmd').forEach(el => {
-    el.addEventListener('click', () => {
-      const command = el.textContent?.trim() || '';
-      const card = el.closest('.download-card');
-      const platform = card?.querySelector('h3')?.textContent || 'unknown';
-      if (typeof gtag === 'function') {
-        gtag('event', 'download', {
-          platform: platform,
-          install_command: command,
-        });
-      }
-    });
-  });
-
-  // GA: Track Installation Guide button clicks
-  document.querySelectorAll('.download-btn').forEach(el => {
-    el.addEventListener('click', () => {
-      const card = el.closest('.download-card');
-      const platform = card?.querySelector('h3')?.textContent || 'unknown';
-      if (typeof gtag === 'function') {
-        gtag('event', 'download_guide_click', {
-          platform: platform,
-        });
-      }
-    });
-  });
 </script>
