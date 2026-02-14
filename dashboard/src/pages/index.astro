@@ -246,6 +246,12 @@ if (!tenantParam && user?.lastTenant) {
 
   function goToTenant() {
     const tenant = tenantInput?.value.trim().toLowerCase() || 'default';
+    // GA: Track tenant selection
+    if (typeof gtag === 'function') {
+      gtag('event', 'tenant_selected', {
+        tenant_id: tenant,
+      });
+    }
     // Save tenant preference server-side
     fetch('/api/tenant/save', {
       method: 'POST',
