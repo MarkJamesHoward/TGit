@@ -24,3 +24,6 @@ jobs:
 
       - name: Run CLI unit tests
         run: dotnet test tests/TGit.Tests/TGit.Tests.csproj --configuration Release --no-restore --verbosity normal
+
+      - name: Run CLI integration tests
+        run: dotnet test tests/TGit.IntegrationTests/TGit.IntegrationTests.csproj --configuration Release --no-restore --verbosity normal

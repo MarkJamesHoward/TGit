@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^dotnet test \\.\\\\tests\\\\TGit\\.IntegrationTests\\\\TGit\\.IntegrationTests\\.csproj -v minimal$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
