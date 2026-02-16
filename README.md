@@ -1,5 +1,7 @@
 # TGit - Git Wrapper with Activity Tracking
 
+[![CLI Tests](https://github.com/MarkJamesHoward/TGit/actions/workflows/cli-tests.yml/badge.svg)](https://github.com/MarkJamesHoward/TGit/actions/workflows/cli-tests.yml)
+
 TGit is a CLI tool that wraps Git commands, passing them through to Git while sending activity tracking data to an API. It includes a real-time web dashboard to visualize team activity, with tenant isolation for multi-team support.
 
 ## Project Structure
@@ -201,6 +203,3 @@ For Terraform in Docker, set these values in [.terraform/azure_secrets.txt](.ter
 
 Then run the commands in [.terraform/docker run details.txt](.terraform/docker%20run%20details.txt) to execute `init`, `validate`, `plan`, and `apply` with `--env-file`.
 
-## License
-
-MIT

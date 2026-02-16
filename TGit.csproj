@@ -9,7 +9,7 @@
     <!-- Global Tool Properties -->
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>tgit</ToolCommandName>
-    
+
     <!-- NuGet Package Properties -->
     <PackageId>TGit</PackageId>
     <Version>1.5.0</Version>
@@ -19,13 +19,13 @@
     <PackageProjectUrl>https://github.com/MarkJamesHoward/TGit</PackageProjectUrl>
     <RepositoryUrl>https://github.com/MarkJamesHoward/TGit</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="api\**" />
+    <Compile Remove="tests\**" />
   </ItemGroup>
 
   <ItemGroup>

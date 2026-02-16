@@ -1,0 +1,26 @@
+name: CLI Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore
+        run: dotnet restore TGit.sln
+
+      - name: Run CLI unit tests
+        run: dotnet test tests/TGit.Tests/TGit.Tests.csproj --configuration Release --no-restore --verbosity normal
