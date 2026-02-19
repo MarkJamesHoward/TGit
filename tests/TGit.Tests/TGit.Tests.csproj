@@ -17,6 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\TGit.csproj" />
+    <ProjectReference Include="..\..\cli\TGit.csproj" />
   </ItemGroup>
 </Project>

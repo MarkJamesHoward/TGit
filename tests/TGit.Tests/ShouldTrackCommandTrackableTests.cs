@@ -4,6 +4,8 @@ namespace TGit.Tests;
 
 public class ShouldTrackCommandTrackableTests
 {
+    private static readonly GitOperationsService GitOperations = new();
+
     public static IEnumerable<object[]> TrackableCommands()
     {
         yield return ["status"];
@@ -44,6 +46,6 @@ public class ShouldTrackCommandTrackableTests
 
     private static bool InvokeShouldTrack(string[] args)
     {
-        return ProgramPrivateMethodInvoker.InvokeBool("ShouldTrackCommand", [args]);
+        return GitOperations.ShouldTrackCommand(args);
     }
 }

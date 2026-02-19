@@ -4,10 +4,12 @@ namespace TGit.Tests;
 
 public class EscapeArgumentSimpleTests
 {
+    private static readonly GitOperationsService GitOperations = new();
+
     [Fact]
     public void ReturnsDoubleQuotes_ForEmptyArgument()
     {
-        var result = ProgramPrivateMethodInvoker.InvokeString("EscapeArgument", "");
+        var result = GitOperations.EscapeArgument("");
 
         Assert.Equal("\"\"", result);
     }
@@ -15,7 +17,7 @@ public class EscapeArgumentSimpleTests
     [Fact]
     public void ReturnsUnchanged_ForSimpleArgument()
     {
-        var result = ProgramPrivateMethodInvoker.InvokeString("EscapeArgument", "status");
+        var result = GitOperations.EscapeArgument("status");
 
         Assert.Equal("status", result);
     }

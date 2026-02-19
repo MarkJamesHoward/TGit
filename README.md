@@ -4,12 +4,27 @@
 
 TGit is a CLI tool that wraps Git commands, passing them through to Git while sending activity tracking data to an API. It includes a real-time web dashboard to visualize team activity, with tenant isolation for multi-team support.
 
+## Who Benefits from TGit
+
+1. **Single user on a single machine with multiple repositories**
+  - If you regularly switch between repos, TGit helps you stay tidy by showing repo state and recent activity.
+  - This makes it easier to decide what to commit, what to clean up, and when to remove temporary/test branches.
+
+2. **Single user across multiple machines**
+  - TGit provides the same visibility across your devices (for example, laptop and desktop).
+  - Before changing files, you can see where work already happened, reducing duplicate work and merge conflicts.
+
+3. **Teams in a company (including managers)**
+  - Developers can share a tenant and see who is working on what in real time.
+  - Managers get a live, lightweight view of current team activity across repositories.
+
 ## Project Structure
 
 ```
 TGit/
-├── Program.cs              # CLI wrapper application
-├── TGit.csproj             # .NET project file (CLI)
+├── cli/                    # CLI application
+│   ├── Program.cs          # CLI wrapper entrypoint
+│   └── TGit.csproj         # .NET project file (CLI)
 ├── api/                    # ASP.NET Core Web API
 │   ├── Controllers/        # API endpoints
 │   ├── Services/           # Storage services (JSON, Cosmos DB)
@@ -57,9 +72,9 @@ winget install MarkJamesHoward.TGit
 #### Or build and install manually
 
 ```bash
-cd TGit
-dotnet pack -c Release
-dotnet tool install --global --add-source ./nupkg TGit
+cd TGit/cli
+dotnet pack -c Release -o ../nupkg
+dotnet tool install --global --add-source ../nupkg TGit
 ```
 
 ## Usage

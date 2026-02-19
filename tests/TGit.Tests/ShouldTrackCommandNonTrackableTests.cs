@@ -4,6 +4,8 @@ namespace TGit.Tests;
 
 public class ShouldTrackCommandNonTrackableTests
 {
+    private static readonly GitOperationsService GitOperations = new();
+
     [Fact]
     public void ReturnsFalse_WhenNoArgs()
     {
@@ -37,6 +39,6 @@ public class ShouldTrackCommandNonTrackableTests
 
     private static bool InvokeShouldTrack(string[] args)
     {
-        return ProgramPrivateMethodInvoker.InvokeBool("ShouldTrackCommand", [args]);
+        return GitOperations.ShouldTrackCommand(args);
     }
 }

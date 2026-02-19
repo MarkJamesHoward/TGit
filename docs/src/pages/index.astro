@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import fs from 'node:fs';
 
-const csproj = fs.readFileSync(new URL('../../../TGit.csproj', import.meta.url), 'utf-8');
+const csproj = fs.readFileSync(new URL('../../../cli/TGit.csproj', import.meta.url), 'utf-8');
 const currentVersion = csproj.match(/<Version>(.*?)<\/Version>/)?.[1] ?? '0.0.0';
 ---
 
@@ -28,6 +28,7 @@ const currentVersion = csproj.match(/<Version>(.*?)<\/Version>/)?.[1] ?? '0.0.0'
       <aside class="sidebar">
         <nav class="sidebar-nav">
           <a href="#about" class="sidebar-link">About</a>
+          <a href="#who-its-for" class="sidebar-link">Who It's For</a>
           <a href="#how-it-works" class="sidebar-link">How It Works</a>
           <a href="#download" class="sidebar-link">Download</a>
           <a href="#windows-install" class="sidebar-link">Windows Install</a>
@@ -132,6 +133,49 @@ const currentVersion = csproj.match(/<Version>(.*?)<\/Version>/)?.[1] ?? '0.0.0'
             <div class="feature-icon">🏢</div>
             <h3>Team Isolation</h3>
             <p>Tenant-based isolation keeps your team's data separate</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="who-its-for">
+        <h2>Who TGit Is For</h2>
+        <p>TGit is useful in several common development setups:</p>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Single user on one machine with many repos</h4>
+              <p>
+                If you jump between multiple repositories during the day, TGit helps you keep each repo tidy.
+                You can quickly see branch and file activity, making it easier to decide what needs a commit,
+                what can be cleaned up, and which test branches should be removed.
+              </p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Single user across multiple machines</h4>
+              <p>
+                If you switch between a laptop, desktop, or other devices, TGit gives you the same visibility
+                across all machines. You can see where work is in progress before making changes, reducing duplicate
+                edits and helping avoid merge conflicts.
+              </p>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Engineering teams and managers</h4>
+              <p>
+                Teams can share a tenant to view live activity in one place. Developers get awareness of what others
+                are touching, and managers get a lightweight view of current work across repositories without asking
+                for constant status updates.
+              </p>
+            </div>
           </div>
         </div>
       </section>

@@ -4,10 +4,12 @@ namespace TGit.Tests;
 
 public class ExtractRepoNameFromUrlEdgeCaseTests
 {
+    private static readonly GitOperationsService GitOperations = new();
+
     [Fact]
     public void ReturnsInput_WhenNoSeparatorsExist()
     {
-        var result = ProgramPrivateMethodInvoker.InvokeString("ExtractRepoNameFromUrl", "repo");
+        var result = GitOperations.ExtractRepoNameFromUrl("repo");
 
         Assert.Equal("repo", result);
     }

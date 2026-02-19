@@ -50,13 +50,13 @@ jobs:
 
       - name: Update version in csproj
         run: |
-          $content = Get-Content TGit.csproj -Raw
+          $content = Get-Content cli/TGit.csproj -Raw
           $content = $content -replace '<Version>.*</Version>', "<Version>${{ steps.version.outputs.VERSION }}</Version>"
-          Set-Content TGit.csproj $content
+          Set-Content cli/TGit.csproj $content
 
       - name: Build
         run: >
-          dotnet publish TGit.csproj -c Release -r ${{ matrix.rid }} --self-contained true
+          dotnet publish cli/TGit.csproj -c Release -r ${{ matrix.rid }} --self-contained true
           -p:PublishSingleFile=true
           ${{ matrix.compress == true && '-p:EnableCompressionInSingleFile=true' || '' }}
           -o publish/${{ matrix.rid }}
@@ -172,12 +172,12 @@ jobs:
 
       - name: Update version in csproj
         run: |
-          $content = Get-Content TGit.csproj -Raw
+          $content = Get-Content cli/TGit.csproj -Raw
           $content = $content -replace '<Version>.*</Version>', "<Version>${{ needs.build.outputs.version }}</Version>"
-          Set-Content TGit.csproj $content
+          Set-Content cli/TGit.csproj $content
 
       - name: Pack NuGet package
-        run: dotnet pack TGit.csproj -c Release -p:PackageVersion=${{ needs.build.outputs.version }} -p:PackageIcon= -o nupkg
+        run: dotnet pack cli/TGit.csproj -c Release -p:PackageVersion=${{ needs.build.outputs.version }} -p:PackageIcon= -o nupkg
 
       - name: NuGet trusted publishing login
         uses: NuGet/login@v1

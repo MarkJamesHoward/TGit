@@ -4,6 +4,8 @@ namespace TGit.Tests;
 
 public class ExtractRepoNameFromUrlCommonFormatTests
 {
+    private static readonly GitOperationsService GitOperations = new();
+
     [Theory]
     [InlineData("https://github.com/user/repo.git", "repo")]
     [InlineData("https://github.com/user/repo", "repo")]
@@ -12,7 +14,7 @@ public class ExtractRepoNameFromUrlCommonFormatTests
     [InlineData("https://github.com/user/repo/", "repo")]
     public void ExtractsRepoName_FromCommonGitUrlFormats(string url, string expected)
     {
-        var result = ProgramPrivateMethodInvoker.InvokeString("ExtractRepoNameFromUrl", url);
+        var result = GitOperations.ExtractRepoNameFromUrl(url);
 
         Assert.Equal(expected, result);
     }

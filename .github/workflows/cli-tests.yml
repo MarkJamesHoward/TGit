@@ -19,8 +19,16 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Restore
-        run: dotnet restore TGit.sln
+      - name: Restore CLI project
+        run: dotnet restore cli/TGit.csproj
+
+      - name: Build CLI project
+        run: dotnet build cli/TGit.csproj --configuration Release --no-restore
+
+      - name: Restore test projects
+        run: |
+          dotnet restore tests/TGit.Tests/TGit.Tests.csproj
+          dotnet restore tests/TGit.IntegrationTests/TGit.IntegrationTests.csproj
 
       - name: Run CLI unit tests
         run: dotnet test tests/TGit.Tests/TGit.Tests.csproj --configuration Release --no-restore --verbosity normal

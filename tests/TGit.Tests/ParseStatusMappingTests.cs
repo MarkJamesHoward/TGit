@@ -4,6 +4,8 @@ namespace TGit.Tests;
 
 public class ParseStatusMappingTests
 {
+    private static readonly GitOperationsService GitOperations = new();
+
     [Theory]
     [InlineData("A", "Added")]
     [InlineData("M", "Modified")]
@@ -14,7 +16,7 @@ public class ParseStatusMappingTests
     [InlineData("?", "Untracked")]
     public void ReturnsExpectedMappedValue(string statusCode, string expected)
     {
-        var result = ProgramPrivateMethodInvoker.InvokeString("ParseStatus", statusCode);
+        var result = GitOperations.ParseStatus(statusCode);
 
         Assert.Equal(expected, result);
     }

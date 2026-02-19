@@ -132,7 +132,7 @@ internal static class IntegrationTestSupport
         {
             "run",
             "--project",
-            Path.Combine(repoRoot, "TGit.csproj"),
+            Path.Combine(repoRoot, "cli", "TGit.csproj"),
             "--",
         };
         args.AddRange(tgitArgs);
