@@ -56,8 +56,8 @@ TGit/
 ```
 
 - **CLI** (`tgit`) — wraps git commands, sends activity data to the API
-- **API** (`api.tgit.app`) — ASP.NET Core API, stores data in JSON files or Cosmos DB
-- **Dashboard** (`tgit.app`) — Astro static site, polls the API and displays team activity
+- **API** (`tgit-api.azurewebsites.net`) — ASP.NET Core API, stores data in JSON files or Azure SQL
+- **Dashboard** (`tgit.app`) — Astro site, polls the API and displays team activity
 
 ## Installation
 
@@ -130,7 +130,7 @@ The following git commands trigger activity tracking:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `TGIT_API_URL` | API endpoint for tracking data | `https://api.tgit.app/api/GitActivity` |
+| `TGIT_API_URL` | API endpoint for tracking data | `https://tgit-api.azurewebsites.net/api/GitActivity` |
 | `TGIT_TENANT` | Override tenant ID (takes precedence over config) | Auto-generated |
 | `TGIT_DEBUG` | Set to `1` to enable debug output | Not set |
 
@@ -194,7 +194,7 @@ Deployed automatically via GitHub Actions when files in `api/` change on `main`.
 Deployed automatically via GitHub Actions when files in `dashboard/` change on `main`.
 
 **Build-time environment variable:**
-- `PUBLIC_API_BASE_URL` — the API base URL (e.g., `https://api.tgit.app`)
+- `PUBLIC_API_BASE_URL` — the API base URL (e.g., `https://tgit-api.azurewebsites.net`)
 
 ### CLI Release
 

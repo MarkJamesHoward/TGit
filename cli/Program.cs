@@ -8,7 +8,7 @@ class Program
     // Default points to Azure production
     private static readonly string ApiEndpoint =
         Environment.GetEnvironmentVariable("TGIT_API_URL")
-        ?? "https://api.tgit.app/api/GitActivity";
+        ?? "https://tgit-api.azurewebsites.net/api/GitActivity";
 
     private static readonly HttpClient HttpClient = new();
 
