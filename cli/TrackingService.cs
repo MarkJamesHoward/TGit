@@ -44,10 +44,21 @@ internal class TrackingService
 
             try
             {
-                await _httpClient.PostAsync(_apiEndpoint, content, cts.Token);
+                var response = await _httpClient.PostAsync(_apiEndpoint, content, cts.Token);
+                if (Environment.GetEnvironmentVariable("TGIT_DEBUG") == "1")
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    Console.Error.WriteLine($"[TGit Debug] POST {_apiEndpoint} -> {(int)response.StatusCode} {response.StatusCode}");
+                    if (!response.IsSuccessStatusCode)
+                        Console.Error.WriteLine($"[TGit Debug] Response: {body}");
+                }
             }
             catch (TaskCanceledException) { }
-            catch (HttpRequestException) { }
+            catch (HttpRequestException ex)
+            {
+                if (Environment.GetEnvironmentVariable("TGIT_DEBUG") == "1")
+                    Console.Error.WriteLine($"[TGit Debug] HTTP error: {ex.Message}");
+            }
         }
         catch (Exception ex)
         {

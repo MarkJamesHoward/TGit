@@ -10,7 +10,7 @@
     <ToolCommandName>tgit</ToolCommandName>
 
     <PackageId>TGit</PackageId>
-    <Version>1.5.0</Version>
+    <Version>1.5.1</Version>
     <Authors>Mark James Howard</Authors>
     <Description>Git CLI wrapper with real-time activity tracking dashboard. Track commits, pushes, and file changes across your team with tenant isolation.</Description>
     <PackageTags>git;cli;developer-tools;activity-tracker;dashboard;productivity</PackageTags>
@@ -18,7 +18,7 @@
     <RepositoryUrl>https://github.com/MarkJamesHoward/TGit</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>icon.png</PackageIcon>
+    <PackageIcon Condition="Exists('..\icon.png')">icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
