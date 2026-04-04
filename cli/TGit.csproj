@@ -10,7 +10,7 @@
     <ToolCommandName>tgit</ToolCommandName>
 
     <PackageId>TGit</PackageId>
-    <Version>1.5.2</Version>
+    <Version>1.5.3</Version>
     <Authors>Mark James Howard</Authors>
     <Description>Git CLI wrapper with real-time activity tracking dashboard. Track commits, pushes, and file changes across your team with tenant isolation.</Description>
     <PackageTags>git;cli;developer-tools;activity-tracker;dashboard;productivity</PackageTags>

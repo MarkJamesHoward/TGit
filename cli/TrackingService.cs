@@ -45,27 +45,30 @@ internal class TrackingService
             try
             {
                 var response = await _httpClient.PostAsync(_apiEndpoint, content, cts.Token);
-                if (Environment.GetEnvironmentVariable("TGIT_DEBUG") == "1")
+                var isDebug = Environment.GetEnvironmentVariable("TGIT_DEBUG") == "1";
+                if (isDebug)
+                    Console.Error.WriteLine($"[TGit Debug] POST {_apiEndpoint} -> {(int)response.StatusCode} {response.StatusCode}");
+                if (!response.IsSuccessStatusCode)
                 {
                     var body = await response.Content.ReadAsStringAsync();
-                    Console.Error.WriteLine($"[TGit Debug] POST {_apiEndpoint} -> {(int)response.StatusCode} {response.StatusCode}");
-                    if (!response.IsSuccessStatusCode)
+                    Console.Error.WriteLine($"[TGit] Warning: tracking failed ({(int)response.StatusCode} {response.StatusCode})");
+                    if (isDebug)
                         Console.Error.WriteLine($"[TGit Debug] Response: {body}");
                 }
             }
-            catch (TaskCanceledException) { }
+            catch (TaskCanceledException)
+            {
+                Console.Error.WriteLine("[TGit] Warning: tracking request timed out");
+            }
             catch (HttpRequestException ex)
             {
-                if (Environment.GetEnvironmentVariable("TGIT_DEBUG") == "1")
-                    Console.Error.WriteLine($"[TGit Debug] HTTP error: {ex.Message}");
+                Console.Error.WriteLine($"[TGit] Warning: tracking failed ({ex.Message})");
             }
         }
         catch (Exception ex)
         {
             if (Environment.GetEnvironmentVariable("TGIT_DEBUG") == "1")
-            {
                 Console.Error.WriteLine($"[TGit Debug] Error sending tracking info: {ex.Message}");
-            }
         }
     }
 
