@@ -71,8 +71,10 @@ _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
 
-# Data directory
+# JSON storage data directory (lowercase)
 data/
+# Allow EF Core Data/ source folder (uppercase)
+!Data/
 *.json.lock
 
 # Environment files

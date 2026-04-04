@@ -1,3 +1,6 @@
+using Azure.Identity;
+using Microsoft.EntityFrameworkCore;
+using TGitApi.Data;
 using TGitApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +23,13 @@ builder.Services.AddCors(options =>
 
 // Register storage service based on configuration
 var storageType = builder.Configuration["Storage:Type"]?.ToLowerInvariant() ?? "json";
-if (storageType == "cosmos")
+if (storageType == "sql")
+{
+    builder.Services.AddDbContextFactory<TGitDbContext>(options =>
+        options.UseSqlServer(builder.Configuration["Sql:ConnectionString"]));
+    builder.Services.AddSingleton<IStorageService, SqlStorageService>();
+}
+else if (storageType == "cosmos")
 {
     builder.Services.AddSingleton<IStorageService, CosmosStorageService>();
 }
@@ -30,6 +39,15 @@ else
 }
 
 var app = builder.Build();
+
+// Auto-create SQL tables if using SQL storage
+if (storageType == "sql")
+{
+    using var scope = app.Services.CreateScope();
+    var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<TGitDbContext>>();
+    using var db = await dbFactory.CreateDbContextAsync();
+    await db.Database.EnsureCreatedAsync();
+}
 
 // Configure the HTTP request pipeline
 app.UseSwagger();

@@ -9,6 +9,15 @@ resource "azurerm_linux_web_app" "tgit_api" {
       dotnet_version = "9.0"
     }
   }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  app_settings = {
+    "Storage__Type"        = "sql"
+    "Sql__ConnectionString" = "Server=tgit-sql-server.database.windows.net;Database=tgit;Authentication=Active Directory Default;Encrypt=true;TrustServerCertificate=false;"
+  }
 }
 
 # Custom domain

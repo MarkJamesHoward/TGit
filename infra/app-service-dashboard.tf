@@ -22,14 +22,16 @@ resource "azurerm_linux_web_app" "tgit" {
     }
   }
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   app_settings = {
-    "HOST"             = "0.0.0.0"
-    "COSMOS_ENDPOINT"  = azurerm_cosmosdb_account.tgit.endpoint
-    "COSMOS_KEY"       = azurerm_cosmosdb_account.tgit.primary_key
-    "COSMOS_DATABASE"  = "tgit-dashboard"
-    "WEBAUTHN_RP_NAME" = var.webauthn_rp_name
-    "WEBAUTHN_RP_ID"   = var.webauthn_rp_id
-    "WEBAUTHN_ORIGIN"  = var.webauthn_origin
+    "HOST"                 = "0.0.0.0"
+    "SQL_CONNECTION_STRING" = "Server=tgit-sql-server.database.windows.net;Database=tgit;Authentication=Active Directory Default;Encrypt=true;TrustServerCertificate=false;"
+    "WEBAUTHN_RP_NAME"     = var.webauthn_rp_name
+    "WEBAUTHN_RP_ID"       = var.webauthn_rp_id
+    "WEBAUTHN_ORIGIN"      = var.webauthn_origin
   }
 }
 
