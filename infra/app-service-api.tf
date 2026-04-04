@@ -16,7 +16,7 @@ resource "azurerm_linux_web_app" "tgit_api" {
 
   app_settings = {
     "Storage__Type"        = "sql"
-    "Sql__ConnectionString" = "Server=tgit-sql-server.database.windows.net;Database=tgit;Authentication=Active Directory Default;Encrypt=true;TrustServerCertificate=false;"
+    "Sql__ConnectionString" = "Server=hvhsejcxpv.database.windows.net;Database=tgit-database;Authentication=Active Directory Default;Encrypt=true;TrustServerCertificate=false;"
   }
 }
 

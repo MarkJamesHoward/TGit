@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@astrojs/node": "^9.5.2",
-    "@azure/cosmos": "^4.9.0",
+    "@azure/identity": "^4.6.0",
+    "mssql": "^11.0.1",
     "astro": "^5.16.11"
   }
 }

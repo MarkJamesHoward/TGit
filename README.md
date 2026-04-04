@@ -27,7 +27,7 @@ TGit/
 │   └── TGit.csproj         # .NET project file (CLI)
 ├── api/                    # ASP.NET Core Web API
 │   ├── Controllers/        # API endpoints
-│   ├── Services/           # Storage services (JSON, Cosmos DB)
+│   ├── Services/           # Storage services (JSON, SQL)
 │   ├── Models/             # Data models
 │   └── TGitApi.csproj
 ├── dashboard/              # Astro.js static web dashboard
@@ -184,10 +184,9 @@ Deployed automatically via GitHub Actions when files in `api/` change on `main`.
 **App Settings:**
 | Setting | Description |
 |---------|-------------|
-| `Storage__Type` | `json` (default) or `cosmos` |
+| `Storage__Type` | `json` (default) or `sql` |
 | `Storage__DataDir` | Path for JSON storage (use `/home/data` for persistence on Azure) |
-| `Cosmos__Endpoint` | Cosmos DB endpoint (when using Cosmos storage) |
-| `Cosmos__Key` | Cosmos DB key (when using Cosmos storage) |
+| `Sql__ConnectionString` | Azure SQL connection string (when using SQL storage) |
 
 ### Dashboard (Azure Static Web App)
 

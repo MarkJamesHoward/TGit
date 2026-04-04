@@ -29,10 +29,6 @@ if (storageType == "sql")
         options.UseSqlServer(builder.Configuration["Sql:ConnectionString"]));
     builder.Services.AddSingleton<IStorageService, SqlStorageService>();
 }
-else if (storageType == "cosmos")
-{
-    builder.Services.AddSingleton<IStorageService, CosmosStorageService>();
-}
 else
 {
     builder.Services.AddSingleton<IStorageService, JsonStorageService>();

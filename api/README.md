@@ -6,7 +6,7 @@ A .NET C# WebAPI implementation for tracking Git activity across users and repos
 
 - **POST /api/git-activity** - Record git activity for a user
 - **GET /api/users** - Get all users or active users (with `?active=true` query parameter)
-- Supports both JSON file storage and Azure Cosmos DB
+- Supports JSON file storage and Azure SQL Database
 - CORS enabled for cross-origin requests
 - OpenAPI/Swagger support in development
 
@@ -31,32 +31,28 @@ The API can be configured via `appsettings.json` or environment variables.
 }
 ```
 
-#### Azure Cosmos DB Storage
+#### Azure SQL Database Storage
 
 ```json
 {
   "Storage": {
-    "Type": "cosmos"
+    "Type": "sql"
   },
-  "Cosmos": {
-    "Endpoint": "your-cosmos-endpoint",
-    "Key": "your-cosmos-key",
-    "Database": "tgit",
-    "Container": "users"
+  "Sql": {
+    "ConnectionString": "Server=your-server.database.windows.net;Database=tgit;Authentication=Active Directory Default;Encrypt=true;TrustServerCertificate=false;"
   }
 }
 ```
+
+Tables are created automatically on first startup via EF Core.
 
 ### Environment Variables
 
 You can also configure via environment variables:
 
-- `Storage__Type` - "json" or "cosmos"
+- `Storage__Type` - "json" or "sql"
 - `Storage__DataDir` - Directory for JSON files (default: "./data")
-- `Cosmos__Endpoint` - Cosmos DB endpoint URL
-- `Cosmos__Key` - Cosmos DB access key
-- `Cosmos__Database` - Database name (default: "tgit")
-- `Cosmos__Container` - Container name (default: "users")
+- `Sql__ConnectionString` - Azure SQL connection string
 
 ## Running the API
 
@@ -159,10 +155,16 @@ api/
 │   ├── RepoActivity.cs
 │   ├── UserStatus.cs
 │   └── UsersResponse.cs
+├── Data/
+│   ├── TGitDbContext.cs
+│   └── Entities/
+│       ├── UserEntity.cs
+│       ├── RepoActivityEntity.cs
+│       └── FileEditEntity.cs
 ├── Services/
 │   ├── IStorageService.cs
 │   ├── JsonStorageService.cs
-│   └── CosmosStorageService.cs
+│   └── SqlStorageService.cs
 ├── Program.cs
 └── appsettings.json
 ```

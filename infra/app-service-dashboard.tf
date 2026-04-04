@@ -28,7 +28,7 @@ resource "azurerm_linux_web_app" "tgit" {
 
   app_settings = {
     "HOST"                 = "0.0.0.0"
-    "SQL_CONNECTION_STRING" = "Server=tgit-sql-server.database.windows.net;Database=tgit;Authentication=Active Directory Default;Encrypt=true;TrustServerCertificate=false;"
+    "SQL_CONNECTION_STRING" = "Server=hvhsejcxpv.database.windows.net;Database=tgit-database;Authentication=Active Directory Default;Encrypt=true;TrustServerCertificate=false;"
     "WEBAUTHN_RP_NAME"     = var.webauthn_rp_name
     "WEBAUTHN_RP_ID"       = var.webauthn_rp_id
     "WEBAUTHN_ORIGIN"      = var.webauthn_origin
