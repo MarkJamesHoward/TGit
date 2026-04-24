@@ -1,0 +1,54 @@
+[
+  {
+    "Id": "markhoward::markjameshoward@hotmail.co.uk",
+    "UserName": "Mark Howard",
+    "UserEmail": "markjameshoward@hotmail.co.uk",
+    "LastActivity": "2026-04-24T21:08:21.6827781Z",
+    "Activities": {
+      "TGit::YOGA9IAURALAPTO": {
+        "RepoName": "TGit",
+        "Branch": "main",
+        "RemoteUrl": "https://github.com/MarkJamesHoward/TGit.git",
+        "ModifiedFiles": [
+          {
+            "FilePath": ".claude/settings.local.json",
+            "Status": "Modified",
+            "IsStaged": false
+          },
+          {
+            "FilePath": "api/Program.cs",
+            "Status": "Modified",
+            "IsStaged": false
+          },
+          {
+            "FilePath": "api/TGitApi.csproj",
+            "Status": "Modified",
+            "IsStaged": false
+          },
+          {
+            "FilePath": "api/appsettings.json",
+            "Status": "Modified",
+            "IsStaged": false
+          }
+        ],
+        "LastUpdated": "2026-04-24T21:07:08.1996089Z",
+        "MachineName": "YOGA9IAURALAPTO"
+      },
+      "test::YOGA9IAURALAPTO": {
+        "RepoName": "test",
+        "Branch": "new",
+        "RemoteUrl": null,
+        "ModifiedFiles": [
+          {
+            "FilePath": "mot.txt",
+            "Status": "Added",
+            "IsStaged": true
+          }
+        ],
+        "LastUpdated": "2026-04-24T21:08:21.6827781Z",
+        "MachineName": "YOGA9IAURALAPTO"
+      }
+    },
+    "Tenant": "markhoward"
+  }
+]

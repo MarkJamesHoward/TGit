@@ -1,5 +1,7 @@
 using Azure.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using TGitApi.Data;
 using TGitApi.Services;
 
@@ -9,15 +11,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder
+    .Services.AddOpenTelemetry()
+    .WithTracing(tracing =>
+        tracing.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddOtlpExporter()
+    )
+    .WithMetrics(metrics =>
+        metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddOtlpExporter()
+    );
 
 // Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
     });
 });
 
@@ -26,7 +34,8 @@ var storageType = builder.Configuration["Storage:Type"]?.ToLowerInvariant() ?? "
 if (storageType == "sql")
 {
     builder.Services.AddDbContextFactory<TGitDbContext>(options =>
-        options.UseSqlServer(builder.Configuration["Sql:ConnectionString"]));
+        options.UseSqlServer(builder.Configuration["Sql:ConnectionString"])
+    );
     builder.Services.AddSingleton<IStorageService, SqlStorageService>();
 }
 else
