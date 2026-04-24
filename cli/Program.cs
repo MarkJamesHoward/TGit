@@ -4,11 +4,13 @@ namespace TGit;
 
 class Program
 {
-    // Configure your API endpoint via TGIT_API_URL environment variable
+    // Configure your API base URL via TGIT_CLI_API_URL environment variable
     // Default points to Azure production
-    private static readonly string ApiEndpoint =
-        Environment.GetEnvironmentVariable("TGIT_API_URL")
-        ?? "https://tgit-api.azurewebsites.net/api/GitActivity";
+    private static readonly string ApiBaseUrl =
+        Environment.GetEnvironmentVariable("TGIT_CLI_API_URL")
+        ?? "https://tgit-api.azurewebsites.net";
+
+    private static readonly string ApiEndpoint = $"{ApiBaseUrl.TrimEnd('/')}/api/GitActivity";
 
     private static readonly HttpClient HttpClient = new();
 

@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const apiBaseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'https://tgit-api.azurewebsites.net';
+const apiBaseUrl = import.meta.env.PUBLIC_TGIT_DASHBOARD_API_URL || 'https://tgit-api.azurewebsites.net';
 const user = Astro.locals.user;
 
 // If no tenant param and user has a lastTenant, redirect

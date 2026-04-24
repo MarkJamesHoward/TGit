@@ -128,11 +128,19 @@ The following git commands trigger activity tracking:
 
 ### Environment Variables
 
+**CLI** (used by the `tgit` command):
+
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `TGIT_API_URL` | API endpoint for tracking data | `https://tgit-api.azurewebsites.net/api/GitActivity` |
+| `TGIT_CLI_API_URL` | Base URL of the API (the CLI appends `/api/GitActivity`) | `https://tgit-api.azurewebsites.net` |
 | `TGIT_TENANT` | Override tenant ID (takes precedence over config) | Auto-generated |
-| `TGIT_DEBUG` | Set to `1` to enable debug output | Not set |
+| `TGIT_DEBUG` | Set to `1` to enable verbose debug output | Not set |
+
+**Dashboard** (used at build time by the Astro dashboard):
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PUBLIC_TGIT_DASHBOARD_API_URL` | Base URL of the API (the dashboard appends `/api/users`) | `https://tgit-api.azurewebsites.net` |
 
 ## Dashboard
 
@@ -175,6 +183,59 @@ The dashboard polls the API every 2 seconds and shows:
 }
 ```
 
+## Local Development
+
+To run the full stack locally (CLI → API → Dashboard):
+
+### 1. Start the API
+
+The API uses JSON file storage by default (`api/appsettings.json` has `Storage:Type` set to `json`). In production, the Azure app setting `Storage__DataDir` overrides the data directory to `/home/data` for persistence across redeploys. Locally, data is stored in `api/data/`.
+
+Start the API:
+
+```bash
+cd api
+dotnet run
+```
+
+The API will start on `http://localhost:5000`.
+
+To use Azure SQL locally instead of JSON, change `Storage:Type` to `sql` in `api/appsettings.json` (requires Azure AD credentials configured).
+
+### 2. Point the CLI at the local API
+
+```powershell
+$env:TGIT_CLI_API_URL = "http://localhost:5000"
+tgit status
+```
+
+Or to run the CLI from source (without installing via NuGet):
+
+```bash
+dotnet run --project cli -- status
+```
+
+### 3. Start the Dashboard
+
+```powershell
+$env:PUBLIC_TGIT_DASHBOARD_API_URL = "http://localhost:5000"
+cd dashboard
+npm run dev
+```
+
+The dashboard will start on `http://localhost:4321` and fetch data from your local API.
+
+### Debugging
+
+Enable debug output for the CLI:
+
+```powershell
+$env:TGIT_DEBUG = "1"
+tgit status
+```
+
+This shows the HTTP request/response details. Tracking errors (non-200 responses, timeouts, connection failures) are always shown on stderr even without debug mode.
+
 ## Deployment
 
 ### API (Azure App Service)
@@ -193,7 +254,7 @@ Deployed automatically via GitHub Actions when files in `api/` change on `main`.
 Deployed automatically via GitHub Actions when files in `dashboard/` change on `main`.
 
 **Build-time environment variable:**
-- `PUBLIC_API_BASE_URL` — the API base URL (e.g., `https://tgit-api.azurewebsites.net`)
+- `PUBLIC_TGIT_DASHBOARD_API_URL` — the API base URL (e.g., `https://tgit-api.azurewebsites.net`)
 
 ### CLI Release
 

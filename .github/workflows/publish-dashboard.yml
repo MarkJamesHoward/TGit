@@ -36,7 +36,7 @@ jobs:
         working-directory: ./dashboard
         run: npm run build
         env:
-          PUBLIC_API_BASE_URL: ${{ secrets.PUBLIC_API_BASE_URL }}
+          PUBLIC_TGIT_DASHBOARD_API_URL: ${{ secrets.PUBLIC_TGIT_DASHBOARD_API_URL }}
           WEBAUTHN_RP_NAME: ${{ secrets.WEBAUTHN_RP_NAME }}
           WEBAUTHN_RP_ID: ${{ secrets.WEBAUTHN_RP_ID }}
           WEBAUTHN_ORIGIN: ${{ secrets.WEBAUTHN_ORIGIN }}

@@ -43,7 +43,7 @@ GIT PASSTHROUGH:
 
 ENVIRONMENT VARIABLES:
   TGIT_TENANT                    Override tenant ID (takes precedence over config)
-  TGIT_API_URL                   Override API endpoint URL
+  TGIT_CLI_API_URL               Override API base URL (e.g. http://localhost:5000)
   TGIT_DEBUG=1                   Enable debug output
 
 DASHBOARD:

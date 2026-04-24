@@ -26,7 +26,7 @@ public class CliIntegrationTests
                 new Dictionary<string, string?>
                 {
                     ["USERPROFILE"] = tempHome,
-                    ["TGIT_API_URL"] = "http://127.0.0.1:1/api/GitActivity",
+                    ["TGIT_CLI_API_URL"] = "http://127.0.0.1:1",
                 }
             );
 
@@ -67,7 +67,7 @@ public class CliIntegrationTests
                 new Dictionary<string, string?>
                 {
                     ["USERPROFILE"] = tempHome,
-                    ["TGIT_API_URL"] = $"{server.BaseUrl}/api/GitActivity",
+                    ["TGIT_CLI_API_URL"] = server.BaseUrl,
                 }
             );
 
@@ -123,7 +123,7 @@ public class CliIntegrationTests
                 new Dictionary<string, string?>
                 {
                     ["USERPROFILE"] = tempHome,
-                    ["TGIT_API_URL"] = $"{server.BaseUrl}/api/GitActivity",
+                    ["TGIT_CLI_API_URL"] = server.BaseUrl,
                     ["TGIT_TENANT"] = "Acme.Team",
                 }
             );

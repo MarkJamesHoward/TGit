@@ -511,9 +511,9 @@ tgit --help</code></pre>
           </thead>
           <tbody>
             <tr>
-              <td><code>TGIT_API_URL</code></td>
-              <td>API endpoint for tracking data</td>
-              <td><code>https://tgit-api.azurewebsites.net/api/GitActivity</code></td>
+              <td><code>TGIT_CLI_API_URL</code></td>
+              <td>Base URL of the API (the CLI appends <code>/api/GitActivity</code>)</td>
+              <td><code>https://tgit-api.azurewebsites.net</code></td>
             </tr>
             <tr>
               <td><code>TGIT_TENANT</code></td>
@@ -556,8 +556,8 @@ dotnet run</code></pre>
             <div class="step-number">2</div>
             <div class="step-content">
               <h4>Point TGit to your API</h4>
-              <p>Set the <code>TGIT_API_URL</code> environment variable on each machine:</p>
-              <pre><code>export TGIT_API_URL=https://your-api-server:5000</code></pre>
+              <p>Set the <code>TGIT_CLI_API_URL</code> environment variable on each machine:</p>
+              <pre><code>export TGIT_CLI_API_URL=https://your-api-server:5000</code></pre>
             </div>
           </div>
         </div>
@@ -571,7 +571,7 @@ dotnet run</code></pre>
               <h4>Build the Dashboard</h4>
               <pre><code>cd TGit/dashboard
 npm install
-PUBLIC_API_BASE_URL=https://your-api-server:5000 npm run build</code></pre>
+PUBLIC_TGIT_DASHBOARD_API_URL=https://your-api-server:5000 npm run build</code></pre>
             </div>
           </div>
           <div class="step">
