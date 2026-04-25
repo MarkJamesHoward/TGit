@@ -11,7 +11,10 @@ public class GitActivityController : ControllerBase
     private readonly IStorageService _storageService;
     private readonly ILogger<GitActivityController> _logger;
 
-    public GitActivityController(IStorageService storageService, ILogger<GitActivityController> logger)
+    public GitActivityController(
+        IStorageService storageService,
+        ILogger<GitActivityController> logger
+    )
     {
         _storageService = storageService;
         _logger = logger;
@@ -22,6 +25,7 @@ public class GitActivityController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("Received git activity: {Activity}", activity);
             // Validate required fields
             if (string.IsNullOrEmpty(activity.UserEmail) || string.IsNullOrEmpty(activity.RepoName))
             {
