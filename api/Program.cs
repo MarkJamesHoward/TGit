@@ -11,14 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder
-    .Services.AddOpenTelemetry()
+
+// OpenTelemetry — configured via OTEL_* env vars (launchSettings.json locally, App Service settings in Azure)
+builder.Services.AddOpenTelemetry()
     .WithTracing(tracing =>
-        tracing.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddOtlpExporter()
-    )
+        tracing.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddOtlpExporter())
     .WithMetrics(metrics =>
-        metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddOtlpExporter()
-    );
+        metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddOtlpExporter());
 
 // Configure CORS
 builder.Services.AddCors(options =>

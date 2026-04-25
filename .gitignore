@@ -19,3 +19,5 @@ web/data/users-*.json
 # Deploy artifacts
 deploy.zip
 web/deploy/
+
+api/Properties/launchSettings.json

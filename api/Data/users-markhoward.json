@@ -3,7 +3,7 @@
     "Id": "markhoward::markjameshoward@hotmail.co.uk",
     "UserName": "Mark Howard",
     "UserEmail": "markjameshoward@hotmail.co.uk",
-    "LastActivity": "2026-04-24T21:08:21.6827781Z",
+    "LastActivity": "2026-04-24T22:45:18.4217159Z",
     "Activities": {
       "TGit::YOGA9IAURALAPTO": {
         "RepoName": "TGit",
@@ -16,22 +16,12 @@
             "IsStaged": false
           },
           {
-            "FilePath": "api/Program.cs",
-            "Status": "Modified",
-            "IsStaged": false
-          },
-          {
-            "FilePath": "api/TGitApi.csproj",
-            "Status": "Modified",
-            "IsStaged": false
-          },
-          {
-            "FilePath": "api/appsettings.json",
+            "FilePath": "api/Data/users-markhoward.json",
             "Status": "Modified",
             "IsStaged": false
           }
         ],
-        "LastUpdated": "2026-04-24T21:07:08.1996089Z",
+        "LastUpdated": "2026-04-24T22:45:18.4217159Z",
         "MachineName": "YOGA9IAURALAPTO"
       },
       "test::YOGA9IAURALAPTO": {
@@ -45,7 +35,7 @@
             "IsStaged": true
           }
         ],
-        "LastUpdated": "2026-04-24T21:08:21.6827781Z",
+        "LastUpdated": "2026-04-24T21:34:45.5760292Z",
         "MachineName": "YOGA9IAURALAPTO"
       }
     },
