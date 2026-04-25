@@ -48,7 +48,21 @@
       "Bash(terraform apply:*)",
       "Bash(nslookup:*)",
       "Bash(dig:*)",
-      "Bash(terraform force-unlock:*)"
+      "Bash(terraform force-unlock:*)",
+      "Bash(npm ls:*)",
+      "Bash(dotnet test:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(tgit config:*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(az webapp config appsettings list:*)",
+      "Bash(az webapp config appsettings set:*)",
+      "Bash(az webapp list:*)",
+      "Bash(MSYS_NO_PATHCONV=1 az webapp config appsettings set:*)",
+      "Bash(MSYS_NO_PATHCONV=1 az webapp config appsettings list:*)",
+      "Bash(where:*)",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet sln:*)"
     ]
   }
 }

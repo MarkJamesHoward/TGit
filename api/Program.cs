@@ -1,6 +1,7 @@
 using Azure.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using TGitApi.Data;
 using TGitApi.Services;
@@ -13,11 +14,34 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // OpenTelemetry — configured via OTEL_* env vars (launchSettings.json locally, App Service settings in Azure)
-builder.Services.AddOpenTelemetry()
+var isDevelopment = builder.Environment.IsDevelopment();
+
+builder
+    .Services.AddOpenTelemetry()
+    .ConfigureResource(resource =>
+        resource.AddService(
+            serviceName: builder.Environment.ApplicationName,
+            serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown"
+        )
+    )
     .WithTracing(tracing =>
-        tracing.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddOtlpExporter())
+    {
+        tracing.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddOtlpExporter();
+
+        if (isDevelopment)
+        {
+            tracing.AddConsoleExporter();
+        }
+    })
     .WithMetrics(metrics =>
-        metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddOtlpExporter());
+    {
+        metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddOtlpExporter();
+
+        if (isDevelopment)
+        {
+            metrics.AddConsoleExporter();
+        }
+    });
 
 // Configure CORS
 builder.Services.AddCors(options =>

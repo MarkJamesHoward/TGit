@@ -26,10 +26,12 @@ The API can be configured via `appsettings.json` or environment variables.
 {
   "Storage": {
     "Type": "json",
-    "DataDir": "./data"
+    "DataDir": "./storage"
   }
 }
 ```
+
+On **Azure App Service**, the storage path automatically defaults to `D:\home\data\tgit` (persistent across deploys).
 
 #### Azure SQL Database Storage
 
@@ -51,7 +53,7 @@ Tables are created automatically on first startup via EF Core.
 You can also configure via environment variables:
 
 - `Storage__Type` - "json" or "sql"
-- `Storage__DataDir` - Directory for JSON files (default: "./data")
+- `Storage__DataDir` - Directory for JSON files (default: "./storage" locally, `D:\home\data\tgit` on Azure App Service)
 - `Sql__ConnectionString` - Azure SQL connection string
 
 ## Running the API

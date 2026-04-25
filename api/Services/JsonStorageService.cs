@@ -11,7 +11,10 @@ public class JsonStorageService : IStorageService
 
     public JsonStorageService(IConfiguration configuration)
     {
-        _dataDir = configuration["Storage:DataDir"] ?? "./data";
+        var defaultDir = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME") != null
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "data", "tgit")
+            : "./storage";
+        _dataDir = configuration["Storage:DataDir"] ?? defaultDir;
         EnsureDataDir();
     }
 
