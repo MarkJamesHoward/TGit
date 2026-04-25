@@ -18,6 +18,11 @@ public class UsersController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetUsers([FromQuery] bool active = false, [FromQuery] string? tenant = null)
     {
+        if (string.IsNullOrWhiteSpace(tenant))
+        {
+            return BadRequest(new { error = "The 'tenant' query parameter is required." });
+        }
+
         var users = active
             ? await _storageService.GetActiveUsersAsync(tenant)
             : await _storageService.GetAllUsersAsync(tenant);
