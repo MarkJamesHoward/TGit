@@ -45,6 +45,12 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Configure Azure App Settings
+        run: |
+          az webapp config appsettings set --name TGit-API --resource-group TGit --settings \
+            OTEL_EXPORTER_OTLP_ENDPOINT=${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }} \
+            OTEL_EXPORTER_OTLP_HEADERS="${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}"
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
