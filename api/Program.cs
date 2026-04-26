@@ -1,5 +1,6 @@
 using Azure.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -41,6 +42,10 @@ builder
         {
             metrics.AddConsoleExporter();
         }
+    })
+    .WithLogging(logging =>
+    {
+        logging.AddOtlpExporter();
     });
 
 // Configure CORS
