@@ -1,2 +1,10 @@
 <Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/TGit.Tests/TGit.Tests.csproj" />
+    <Project Path="tests/TGit.IntegrationTests/TGit.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/api/">
+    <Project Path="api/TGitApi.csproj" />
+  </Folder>
+  <Project Path="cli/TGit.csproj" />
 </Solution>
